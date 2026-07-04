@@ -78,8 +78,13 @@ textarea{min-height:70px;resize:vertical}
 .planning-creneau-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:4px}
 .planning-ligne{display:flex;align-items:center;gap:6px;margin-bottom:5px}
 .planning-ligne:last-child{margin-bottom:0}
-.planning-profil-sel{flex:0 0 auto;min-width:0}
-.planning-profil-sel select{padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:6px;width:auto;max-width:130px}
+.planning-profil-sel{flex:0 0 auto;min-width:0;position:relative}
+.profil-btn{padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;display:flex;align-items:center;gap:4px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-secondary)}
+.profil-btn.has-sel{border-color:#5DCAA5;background:#E1F5EE;color:var(--green-dark)}
+.profil-popup{position:absolute;top:calc(100% + 4px);left:0;z-index:300;background:white;border:1px solid var(--border-strong);border-radius:10px;padding:8px;display:none;flex-direction:column;gap:5px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:150px}
+.profil-popup.open{display:flex}
+.profil-badge-opt{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;border:1.5px solid transparent;transition:all .1s;white-space:nowrap}
+.profil-badge-opt.sel{border-width:1.5px}
 .planning-plat-sel{flex:1;min-width:0}
 .planning-plat-sel select{padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:6px;width:100%}
 .planning-ligne-btns{display:flex;gap:4px;flex-shrink:0}
@@ -749,34 +754,102 @@ function renderPlanning() {
 function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
   if (!container) return;
+  const profilsSelIds = ligne?.profils || [];
+  const profilsSelLabel = profilsSelIds.length
+    ? profilsSelIds.map(id => { const p = data.profils.find(x=>x.id===id); return p ? p.emoji : ''; }).join(' ')
+    : '— Qui ?';
+  const hasSel = profilsSelIds.length > 0;
+
   const div = document.createElement('div');
   div.className = 'planning-ligne';
   div.id = `ligne-${cle}-${jKey}-${moment}-${li}`;
-  div.innerHTML = `
-    <div class="planning-profil-sel">
-      <select onchange="majLigne('${cle}','${jKey}','${moment}',${li},'profils',this)" multiple style="height:auto;min-height:28px;padding:2px 4px;font-size:11px" size="1">
-        ${data.profils.map(p=>`<option value="${p.id}" ${(ligne?.profils||[]).includes(p.id)?'selected':''}>${p.emoji} ${p.prenom}</option>`).join('')}
-      </select>
-    </div>
-    <div class="planning-plat-sel">
-      <select onchange="majLigne('${cle}','${jKey}','${moment}',${li},'platId',this.value)">
-        ${optsPlat(cle, jourIndex)}
-      </select>
-    </div>
-    <div class="planning-ligne-btns">
-      <button class="btn-icon del" onclick="supprimerLigne('${cle}','${jKey}','${moment}',${li})"><i class="ti ti-trash"></i></button>
-    </div>`;
+
+  // Bouton profil + popup
+  const profilSelDiv = document.createElement('div');
+  profilSelDiv.className = 'planning-profil-sel';
+
+  const btn = document.createElement('button');
+  btn.className = `profil-btn${hasSel?' has-sel':''}`;
+  btn.innerHTML = `<i class="ti ti-users" style="font-size:12px"></i> ${profilsSelLabel}`;
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.profil-popup.open').forEach(p => { if(p !== popup) p.classList.remove('open'); });
+    popup.classList.toggle('open');
+  };
+
+  const popup = document.createElement('div');
+  popup.className = 'profil-popup';
+
+  data.profils.forEach(p => {
+    const isSel = profilsSelIds.includes(p.id);
+    const opt = document.createElement('div');
+    opt.className = `profil-badge-opt${isSel?' sel':''}`;
+    opt.style.cssText = isSel
+      ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
+      : `background:var(--surface-1);color:var(--text-secondary)`;
+    opt.innerHTML = `${p.emoji} ${p.prenom}`;
+    opt.dataset.pid = p.id;
+    opt.onclick = async (e) => {
+      e.stopPropagation();
+      const idx = profilsSelIds.indexOf(p.id);
+      if (idx >= 0) profilsSelIds.splice(idx, 1);
+      else profilsSelIds.push(p.id);
+      // Mettre à jour style de l'option
+      const nowSel = profilsSelIds.includes(p.id);
+      opt.className = `profil-badge-opt${nowSel?' sel':''}`;
+      opt.style.cssText = nowSel
+        ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
+        : `background:var(--surface-1);color:var(--text-secondary)`;
+      // Mettre à jour le bouton
+      const newLabel = profilsSelIds.length
+        ? profilsSelIds.map(id => { const pr = data.profils.find(x=>x.id===id); return pr ? pr.emoji : ''; }).join(' ')
+        : '— Qui ?';
+      btn.innerHTML = `<i class="ti ti-users" style="font-size:12px"></i> ${newLabel}`;
+      btn.className = `profil-btn${profilsSelIds.length>0?' has-sel':''}`;
+      // Sauvegarder
+      if (data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) {
+        data.planning[cle][jKey].creneaux[moment][li].profils = [...profilsSelIds];
+        await sauvegarder();
+      }
+    };
+    popup.appendChild(opt);
+  });
+
+  profilSelDiv.appendChild(btn);
+  profilSelDiv.appendChild(popup);
+
+  // Sélecteur de plat
+  const platSelDiv = document.createElement('div');
+  platSelDiv.className = 'planning-plat-sel';
+  const platSel = document.createElement('select');
+  platSel.innerHTML = optsPlat(cle, jourIndex);
+  platSel.onchange = (e) => majLigne(cle, jKey, moment, li, 'platId', e.target.value);
+  platSelDiv.appendChild(platSel);
+
+  // Bouton supprimer
+  const btnsDiv = document.createElement('div');
+  btnsDiv.className = 'planning-ligne-btns';
+  btnsDiv.innerHTML = `<button class="btn-icon del" onclick="supprimerLigne('${cle}','${jKey}','${moment}',${li})"><i class="ti ti-trash"></i></button>`;
+
+  div.appendChild(profilSelDiv);
+  div.appendChild(platSelDiv);
+  div.appendChild(btnsDiv);
   container.appendChild(div);
-  // Sélectionner le plat
-  const sel = div.querySelector('.planning-plat-sel select');
-  if (ligne?.platId) sel.value = ligne.platId;
+
+  // Sélectionner le plat existant
+  if (ligne?.platId) platSel.value = ligne.platId;
   // Badge reste
   if (ligne?.platId?.startsWith('reste:')) {
     const badge = document.createElement('span');
     badge.className = 'reste-badge'; badge.textContent = 'Reste';
-    div.querySelector('.planning-plat-sel').appendChild(badge);
+    platSelDiv.appendChild(badge);
   }
 }
+
+// Fermer les popups au clic ailleurs
+document.addEventListener('click', () => {
+  document.querySelectorAll('.profil-popup.open').forEach(p => p.classList.remove('open'));
+});
 
 function ajouterLigneDOM(cle, jKey, moment, jourIndex, ligneData) {
   const sem = data.planning[cle];
