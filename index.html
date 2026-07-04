@@ -848,9 +848,11 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   }
 }
 
-// Fermer les popups au clic ailleurs
-document.addEventListener('click', () => {
-  document.querySelectorAll('.profil-popup.open').forEach(p => p.classList.remove('open'));
+// Fermer les popups au clic ailleurs (pas si clic dans un popup ou sur un bouton profil)
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.planning-profil-sel')) {
+    document.querySelectorAll('.profil-popup.open').forEach(p => p.classList.remove('open'));
+  }
 });
 
 function ajouterLigneDOM(cle, jKey, moment, jourIndex, ligneData) {
