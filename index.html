@@ -816,6 +816,7 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
     popup.appendChild(opt);
   });
 
+  popup.addEventListener('click', e => e.stopPropagation());
   profilSelDiv.appendChild(btn);
   profilSelDiv.appendChild(popup);
 
