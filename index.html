@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SurLePouce </title>
+<title>SurLePouce</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -743,8 +743,8 @@ function renderPlanning() {
     ['midi','soir'].forEach(moment => {
       const lignes = creneaux[moment] || [];
       if (lignes.length === 0) {
-        // Ajouter une ligne vide par défaut
-        ajouterLigneDOM(cle, jKey, moment, jourIndex, null);
+        // Afficher une ligne vide par défaut SANS l'ajouter en BDD
+        renderLigne(cle, jKey, moment, jourIndex, { profils:[], platId:'' }, 0);
       } else {
         lignes.forEach((ligne, li) => renderLigne(cle, jKey, moment, jourIndex, ligne, li));
       }
@@ -764,8 +764,12 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
     return ids.map(id => {
       const p = data.profils.find(x=>x.id===id);
       if (!p) return '';
-      const initiales = p.prenom.substring(0,2).toUpperCase();
-      return `<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${p.couleur};color:white;font-size:10px;font-weight:700;flex-shrink:0" title="${p.prenom}">${initiales}</span>`;
+      // Découper le nom par & ou , pour gérer les profils multi-personnes
+      const prenoms = p.prenom.split(/[&,]/).map(s=>s.trim()).filter(Boolean);
+      const initiales = prenoms.map(n=>n.substring(0,2)).join(' ');
+      const nbPersonnes = prenoms.length;
+      const largeur = nbPersonnes > 1 ? (nbPersonnes * 18 + 8) + 'px' : '22px';
+      return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:${largeur};height:22px;border-radius:11px;background:${p.couleur};color:white;font-size:10px;font-weight:700;flex-shrink:0;padding:0 4px" title="${p.prenom}">${initiales}</span>`;
     }).join('');
   }
 
@@ -1002,7 +1006,7 @@ function renderIAProfils() {
   if (!el) return;
   el.innerHTML = data.profils.map(p => `
     <label style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:13px;margin:0">
-      <input type="checkbox" value="${p.id}" checked style="accent-color:${p.couleur};width:16px;height:16px">
+      <input type="checkbox" value="${p.id}" style="accent-color:${p.couleur};width:16px;height:16px">
       <span style="background:${p.couleur}20;color:${p.couleur};padding:2px 8px;border-radius:20px;font-weight:500">${p.emoji} ${p.prenom}</span>
     </label>`).join('');
 }
@@ -1055,7 +1059,8 @@ Réponds en français, pour chaque plat: nom, temps estimé, description appéti
         </div>`).join('');
       document.getElementById('ia-actions').innerHTML = cartesHtml;
     }
-    document.getElementById('ia-actions').style.display = 'block';
+    document.getElementById('ia-actions').style.display = 'flex';
+    document.getElementById('ia-actions').style.flexDirection = 'column';
   } catch(e) { rep.textContent = '❌ Erreur de connexion. Réessaie.'; }
 };
 
