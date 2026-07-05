@@ -188,7 +188,10 @@ textarea{min-height:70px;resize:vertical}
   <div id="s-courses" class="section">
     <div class="flex-between" style="margin-bottom:16px">
       <h2 style="margin:0">Liste de courses</h2>
-      <button class="btn btn-sm" onclick="reinitCourses()"><i class="ti ti-refresh"></i> Tout décocher</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="reinitCourses()"><i class="ti ti-refresh"></i> Tout décocher</button>
+        <button class="btn btn-sm btn-danger" onclick="effacerCourses()"><i class="ti ti-trash"></i> Effacer</button>
+      </div>
     </div>
     <div id="courses-content"><div class="empty">Aucune liste générée.<br>Remplis le planning puis génère la liste.</div></div>
   </div>
@@ -391,6 +394,7 @@ let semaineOffset = 0;
 let colorSelectionnee = '#1D9E75';
 let emojiSelectionne = '👤';
 let dernierIAReponse = '';
+let _ajoutLigneEnCours = false;
 let unsubscribe = null;
 let currentUser = null;
 
@@ -711,6 +715,7 @@ function optsProfil(selectedIds=[]) {
 }
 
 function renderPlanning() {
+  if (_ajoutLigneEnCours) return;
   const lundi = lundiDe(semaineOffset);
   const fin = new Date(lundi); fin.setDate(fin.getDate()+6);
   document.getElementById('semaine-label').textContent = `${fmtDate(lundi)} — ${fmtDate(fin)}`;
@@ -865,6 +870,7 @@ document.addEventListener('click', (e) => {
 });
 
 window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
+  _ajoutLigneEnCours = true;
   if (!data.planning[cle]) data.planning[cle] = {};
   if (!data.planning[cle][jKey]) data.planning[cle][jKey] = {};
   if (!data.planning[cle][jKey].creneaux) data.planning[cle][jKey].creneaux = {};
@@ -872,6 +878,7 @@ window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
   const nouvelleLigne = { profils:[], platId:'' };
   data.planning[cle][jKey].creneaux[moment].push(nouvelleLigne);
   await sauvegarder();
+  _ajoutLigneEnCours = false;
   const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
   if (container) {
     const li = data.planning[cle][jKey].creneaux[moment].length - 1;
@@ -975,6 +982,13 @@ window.cocherArticle = async (rayon, i, v) => {
   await sauvegarder();
 };
 
+window.effacerCourses = async () => {
+  if (!confirm('Effacer toute la liste de courses ?')) return;
+  data.liste_courses = {};
+  await sauvegarder();
+  renderCourses();
+};
+
 window.reinitCourses = async () => {
   if (!data.liste_courses?.rayons) return;
   Object.keys(data.liste_courses.rayons).forEach(r => data.liste_courses.rayons[r].forEach(i=>i.coche=false));
@@ -1043,20 +1057,36 @@ Réponds en français, pour chaque plat: nom, temps estimé, description appéti
     if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
     dernierIAReponse = d.content.map(c=>c.text||'').join('');
     rep.textContent = dernierIAReponse;
-    // Extraire les noms de plats pour proposer des boutons d'ajout
-    const lignes = dernierIAReponse.split('\n');
+    // Extraire les plats depuis la réponse IA
+    const lignesIA = dernierIAReponse.split('\n');
     const platsDetectes = [];
-    lignes.forEach(l => {
-      // Détecter les lignes avec numéro ou ** qui indiquent un nom de plat
-      const m = l.match(/^\s*\d+[\.\)]\s*\*{0,2}([^*\n]+)\*{0,2}/);
-      if (m) platsDetectes.push(m[1].trim());
+    let platCourant = null;
+    lignesIA.forEach(l => {
+      const mNom = l.match(/^\s*\d+[\.)\]]?\s*\*{0,2}([^*\n:]{3,60})\*{0,2}\s*$/);
+      if (mNom && !l.toLowerCase().includes('temps') && !l.toLowerCase().includes('description')) {
+        if (platCourant) platsDetectes.push(platCourant);
+        platCourant = { nom: mNom[1].trim(), temps:'normal', description:'' };
+      } else if (platCourant) {
+        if (l.toLowerCase().includes('rapide')) platCourant.temps = 'rapide';
+        const stripped = l.replace(/\*{1,2}/g,'').replace(/^[-:•*]+/,'').trim();
+        if (stripped.length > 15 && !stripped.match(/^\d+[\.\)]/)) {
+          platCourant.description += (platCourant.description ? ' ' : '') + stripped;
+        }
+      }
     });
+    if (platCourant) platsDetectes.push(platCourant);
     if (platsDetectes.length) {
-      const cartesHtml = platsDetectes.map(nom => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface-1);border-radius:8px;margin-top:6px;gap:8px">
-          <span style="font-size:13px;font-weight:500">${nom}</span>
-          <button data-platnom="${nom}" onclick="ajouterPlatIA('${nom.replace(/'/g,"\\'")}','normal')" style="padding:4px 10px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0"><i class="ti ti-plus"></i> Ajouter</button>
-        </div>`).join('');
+      const cartesHtml = platsDetectes.map(p => {
+        const nomEsc = p.nom.replace(/'/g,"\\'");
+        const descEsc = p.description.replace(/'/g,"\\'").replace(/\n/g,' ').substring(0,200);
+        return `<div style="background:var(--surface-1);border-radius:8px;margin-top:6px;padding:8px 10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span style="font-size:13px;font-weight:600">${p.nom}</span>
+            <button data-platnom="${p.nom}" onclick="ajouterPlatIA('${nomEsc}','${p.temps}','','${descEsc}')" style="padding:4px 10px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0"><i class="ti ti-plus"></i> Ajouter</button>
+          </div>
+          ${p.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:3px">${p.description.substring(0,150)}</div>` : ''}
+        </div>`;
+      }).join('');
       document.getElementById('ia-actions').innerHTML = cartesHtml;
     }
     document.getElementById('ia-actions').style.display = 'flex';
@@ -1072,14 +1102,22 @@ window.ajouterDepuisIA = async () => {
   alert(`"${nom}" ajouté à tes plats découverts !`);
 };
 
-window.ajouterPlatIA = async (nom, temps) => {
+window.ajouterPlatIA = async (nom, temps, ingredients, description) => {
   if (data.plats.find(p=>p.nom.toLowerCase()===nom.toLowerCase())) {
     alert(`"${nom}" est déjà dans ta bibliothèque !`);
     return;
   }
-  data.plats.push({id:'p_'+Date.now(),nom:nom.trim(),temps:temps||'normal',moment:'tous',ingredients:[],notes:'Suggéré par l\'IA',categorie:'plats_decouverts',profils:[]});
+  data.plats.push({
+    id:'p_'+Date.now(),
+    nom:nom.trim(),
+    temps:temps||'normal',
+    moment:'tous',
+    ingredients: ingredients ? ingredients.split(',').map(x=>x.trim()).filter(Boolean) : [],
+    notes: description || 'Suggéré par l\'IA',
+    categorie:'plats_decouverts',
+    profils:[]
+  });
   await sauvegarder();
-  // Mettre à jour le bouton pour confirmer
   const btns = document.querySelectorAll(`[data-platnom="${CSS.escape(nom)}"]`);
   btns.forEach(b => { b.textContent = '✓ Ajouté'; b.disabled = true; b.style.background = '#E1F5EE'; b.style.color = 'var(--green-dark)'; });
 };
