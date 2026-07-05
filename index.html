@@ -952,6 +952,14 @@ IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumu
     const proxyUrl1 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
     const r = await fetch(proxyUrl1, {redirect:'follow', credentials:'omit'});
     const d = await r.json();
+    if (d.quota_depasse) {
+      document.getElementById('courses-content').innerHTML = '<div class="empty">⏳ Quota IA atteint pour aujourd\'hui.<br>Réessaie dans quelques heures.</div>';
+      return;
+    }
+    if (d.error) {
+      document.getElementById('courses-content').innerHTML = '<div class="empty">❌ Erreur IA. Réessaie.</div>';
+      return;
+    }
     const txt = d.content.map(c=>c.text||'').join('');
     const courses = JSON.parse(txt.replace(/```json|```/g,'').trim());
     data.liste_courses = { generee_le: new Date().toISOString().slice(0,10), rayons:{} };
@@ -959,7 +967,7 @@ IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumu
     await sauvegarder();
     renderCourses();
   } catch(e) {
-    document.getElementById('courses-content').innerHTML = '<div class="empty">Erreur lors de la génération. Réessaie.</div>';
+    document.getElementById('courses-content').innerHTML = '<div class="empty">❌ Erreur lors de la génération. Réessaie.</div>';
   }
 };
 
@@ -1031,10 +1039,15 @@ Réponds en français, pour chaque plat: nom, temps estimé, description appéti
     const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
     const r = await fetch(proxyUrl2, {redirect:'follow', credentials:'omit'});
     const d = await r.json();
+    if (d.quota_depasse) {
+      rep.textContent = '⏳ Quota IA atteint pour aujourd\'hui. Réessaie dans quelques heures.';
+      return;
+    }
+    if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
     dernierIAReponse = d.content.map(c=>c.text||'').join('');
     rep.textContent = dernierIAReponse;
     document.getElementById('ia-actions').style.display = 'flex';
-  } catch(e) { rep.textContent = 'Erreur de connexion. Réessaie.'; }
+  } catch(e) { rep.textContent = '❌ Erreur de connexion. Réessaie.'; }
 };
 
 window.ajouterDepuisIA = async () => {
