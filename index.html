@@ -590,7 +590,7 @@ window.ouvrirModalPlat = (id) => {
     }
   } else {
     ['f-nom','f-ingredients','f-notes'].forEach(i => document.getElementById(i).value = '');
-    checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+    checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
   }
   document.getElementById('modal-plat').style.display = 'flex';
 };
@@ -756,10 +756,18 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
   if (!container) return;
   const profilsSelIds = ligne?.profils || [];
-  const profilsSelLabel = profilsSelIds.length
-    ? profilsSelIds.map(id => { const p = data.profils.find(x=>x.id===id); return p ? p.emoji : ''; }).join(' ')
-    : '— Qui ?';
   const hasSel = profilsSelIds.length > 0;
+
+  // Générer les bulles avec initiales
+  function bullesProfils(ids) {
+    if (!ids.length) return '<span style="font-size:11px;color:var(--text-muted)">— Qui ?</span>';
+    return ids.map(id => {
+      const p = data.profils.find(x=>x.id===id);
+      if (!p) return '';
+      const initiales = p.prenom.substring(0,2).toUpperCase();
+      return `<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:${p.couleur};color:white;font-size:10px;font-weight:700;flex-shrink:0" title="${p.prenom}">${initiales}</span>`;
+    }).join('');
+  }
 
   const div = document.createElement('div');
   div.className = 'planning-ligne';
@@ -771,7 +779,7 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
 
   const btn = document.createElement('button');
   btn.className = `profil-btn${hasSel?' has-sel':''}`;
-  btn.innerHTML = `<i class="ti ti-users" style="font-size:12px"></i> ${profilsSelLabel}`;
+  btn.innerHTML = bullesProfils(profilsSelIds);
   btn.onclick = (e) => {
     e.stopPropagation();
     document.querySelectorAll('.profil-popup.open').forEach(p => { if(p !== popup) p.classList.remove('open'); });
@@ -802,10 +810,7 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
         ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
         : `background:var(--surface-1);color:var(--text-secondary)`;
       // Mettre à jour le bouton
-      const newLabel = profilsSelIds.length
-        ? profilsSelIds.map(id => { const pr = data.profils.find(x=>x.id===id); return pr ? pr.emoji : ''; }).join(' ')
-        : '— Qui ?';
-      btn.innerHTML = `<i class="ti ti-users" style="font-size:12px"></i> ${newLabel}`;
+      btn.innerHTML = bullesProfils(profilsSelIds);
       btn.className = `profil-btn${profilsSelIds.length>0?' has-sel':''}`;
       // Sauvegarder
       if (data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) {
@@ -855,30 +860,18 @@ document.addEventListener('click', (e) => {
   }
 });
 
-function ajouterLigneDOM(cle, jKey, moment, jourIndex, ligneData) {
-  const sem = data.planning[cle];
-  if (!sem[jKey]) sem[jKey] = {};
-  if (!sem[jKey].creneaux) sem[jKey].creneaux = {};
-  if (!sem[jKey].creneaux[moment]) sem[jKey].creneaux[moment] = [];
-  const li = sem[jKey].creneaux[moment].length;
-  if (!ligneData) {
-    sem[jKey].creneaux[moment].push({ profils:[], platId:'' });
-  }
-  renderLigne(cle, jKey, moment, jourIndex, sem[jKey].creneaux[moment][li], li);
-}
-
 window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
   if (!data.planning[cle]) data.planning[cle] = {};
   if (!data.planning[cle][jKey]) data.planning[cle][jKey] = {};
   if (!data.planning[cle][jKey].creneaux) data.planning[cle][jKey].creneaux = {};
   if (!data.planning[cle][jKey].creneaux[moment]) data.planning[cle][jKey].creneaux[moment] = [];
-  data.planning[cle][jKey].creneaux[moment].push({ profils:[], platId:'' });
+  const nouvelleLigne = { profils:[], platId:'' };
+  data.planning[cle][jKey].creneaux[moment].push(nouvelleLigne);
   await sauvegarder();
-  // Re-render juste ce créneau
   const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
   if (container) {
     const li = data.planning[cle][jKey].creneaux[moment].length - 1;
-    renderLigne(cle, jKey, moment, jourIndex, data.planning[cle][jKey].creneaux[moment][li], li);
+    renderLigne(cle, jKey, moment, jourIndex, nouvelleLigne, li);
   }
 };
 
@@ -1046,16 +1039,44 @@ Réponds en français, pour chaque plat: nom, temps estimé, description appéti
     if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
     dernierIAReponse = d.content.map(c=>c.text||'').join('');
     rep.textContent = dernierIAReponse;
-    document.getElementById('ia-actions').style.display = 'flex';
+    // Extraire les noms de plats pour proposer des boutons d'ajout
+    const lignes = dernierIAReponse.split('\n');
+    const platsDetectes = [];
+    lignes.forEach(l => {
+      // Détecter les lignes avec numéro ou ** qui indiquent un nom de plat
+      const m = l.match(/^\s*\d+[\.\)]\s*\*{0,2}([^*\n]+)\*{0,2}/);
+      if (m) platsDetectes.push(m[1].trim());
+    });
+    if (platsDetectes.length) {
+      const cartesHtml = platsDetectes.map(nom => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface-1);border-radius:8px;margin-top:6px;gap:8px">
+          <span style="font-size:13px;font-weight:500">${nom}</span>
+          <button data-platnom="${nom}" onclick="ajouterPlatIA('${nom.replace(/'/g,"\\'")}','normal')" style="padding:4px 10px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0"><i class="ti ti-plus"></i> Ajouter</button>
+        </div>`).join('');
+      document.getElementById('ia-actions').innerHTML = cartesHtml;
+    }
+    document.getElementById('ia-actions').style.display = 'block';
   } catch(e) { rep.textContent = '❌ Erreur de connexion. Réessaie.'; }
 };
 
 window.ajouterDepuisIA = async () => {
   const nom = prompt('Nom du plat à ajouter dans "Plats découverts" :');
   if (!nom) return;
-  data.plats.push({id:'p_'+Date.now(),nom:nom.trim(),temps:'normal',moment:'tous',ingredients:[],notes:'Suggéré par l\'IA',categorie:'plats_decouverts',profils:data.profils.map(p=>p.id)});
+  data.plats.push({id:'p_'+Date.now(),nom:nom.trim(),temps:'normal',moment:'tous',ingredients:[],notes:'Suggéré par l\'IA',categorie:'plats_decouverts',profils:[]});
   await sauvegarder();
   alert(`"${nom}" ajouté à tes plats découverts !`);
+};
+
+window.ajouterPlatIA = async (nom, temps) => {
+  if (data.plats.find(p=>p.nom.toLowerCase()===nom.toLowerCase())) {
+    alert(`"${nom}" est déjà dans ta bibliothèque !`);
+    return;
+  }
+  data.plats.push({id:'p_'+Date.now(),nom:nom.trim(),temps:temps||'normal',moment:'tous',ingredients:[],notes:'Suggéré par l\'IA',categorie:'plats_decouverts',profils:[]});
+  await sauvegarder();
+  // Mettre à jour le bouton pour confirmer
+  const btns = document.querySelectorAll(`[data-platnom="${CSS.escape(nom)}"]`);
+  btns.forEach(b => { b.textContent = '✓ Ajouté'; b.disabled = true; b.style.background = '#E1F5EE'; b.style.color = 'var(--green-dark)'; });
 };
 
 // ===================== MODALS =====================
