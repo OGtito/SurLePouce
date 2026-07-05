@@ -949,8 +949,8 @@ Format: {"Fruits et légumes":["Tomates x4"],"Viandes et poissons":["Poulet 1kg"
 IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumule les quantités, respecte les allergies.`;
 
   try {
-    const proxyUrl = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
-    const r = await fetch(proxyUrl, {redirect:'follow'});
+    const proxyUrl1 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
+    const r = await fetch(proxyUrl1, {redirect:'follow', credentials:'omit'});
     const d = await r.json();
     const txt = d.content.map(c=>c.text||'').join('');
     const courses = JSON.parse(txt.replace(/```json|```/g,'').trim());
@@ -1028,8 +1028,8 @@ Envie: ${document.getElementById('ia-envie').value||'aucune'}
 Mission: ${types[document.getElementById('ia-type').value]}
 Réponds en français, pour chaque plat: nom, temps estimé, description appétissante de 1-2 phrases. Respecte absolument les préférences et allergies.`;
   try {
-    const proxyUrl = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
-    const r = await fetch(proxyUrl, {redirect:'follow'});
+    const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
+    const r = await fetch(proxyUrl2, {redirect:'follow', credentials:'omit'});
     const d = await r.json();
     dernierIAReponse = d.content.map(c=>c.text||'').join('');
     rep.textContent = dernierIAReponse;
