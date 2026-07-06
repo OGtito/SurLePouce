@@ -1031,8 +1031,9 @@ window.demanderIA = async () => {
   const zone = document.getElementById('ia-zone');
   const rep = document.getElementById('ia-reponse');
   zone.style.display = 'block';
-  rep.innerHTML = '<span class="loading-dots">L\'IA réfléchit</span>';
+  rep.innerHTML = '<span class="loading-dots">L'IA réfléchit</span>';
   document.getElementById('ia-actions').style.display = 'none';
+  document.getElementById('ia-actions').innerHTML = '';
   const types = {
     suggestion:"Propose 4 idées de plats en t'inspirant des habitudes culinaires de cette famille.",
     declinaison:"Propose 3 déclinaisons originales de plats déjà dans leur bibliothèque.",
@@ -1045,50 +1046,39 @@ Bibliothèque de plats: ${JSON.stringify(data.plats.map(p=>({nom:p.nom,temps:p.t
 Contrainte temps: ${document.getElementById('ia-temps').value}
 Envie: ${document.getElementById('ia-envie').value||'aucune'}
 Mission: ${types[document.getElementById('ia-type').value]}
-Réponds en français, pour chaque plat: nom, temps estimé, description appétissante de 1-2 phrases. Respecte absolument les préférences et allergies.`;
+IMPORTANT: Réponds UNIQUEMENT avec un tableau JSON valide, sans texte avant ni après, sans balises markdown.
+Format exact: [{"nom":"Nom du plat","temps":"rapide","ingredients":["ingr1","ingr2"],"description":"Description appétissante en 1-2 phrases."}]
+Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les préférences et allergies.`;
   try {
-    const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
+    const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1500';
     const r = await fetch(proxyUrl2, {redirect:'follow', credentials:'omit'});
     const d = await r.json();
-    if (d.quota_depasse) {
-      rep.textContent = '⏳ Quota IA atteint pour aujourd\'hui. Réessaie dans quelques heures.';
-      return;
-    }
+    if (d.quota_depasse) { rep.textContent = '⏳ Quota IA atteint pour aujourd'hui. Réessaie dans quelques heures.'; return; }
     if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
-    dernierIAReponse = d.content.map(c=>c.text||'').join('');
-    rep.textContent = dernierIAReponse;
-    // Extraire les plats depuis la réponse IA
-    const lignesIA = dernierIAReponse.split('\n');
-    const platsDetectes = [];
-    let platCourant = null;
-    lignesIA.forEach(l => {
-      const mNom = l.match(/^\s*\d+[\.)\]]?\s*\*{0,2}([^*\n:]{3,60})\*{0,2}\s*$/);
-      if (mNom && !l.toLowerCase().includes('temps') && !l.toLowerCase().includes('description')) {
-        if (platCourant) platsDetectes.push(platCourant);
-        platCourant = { nom: mNom[1].trim(), temps:'normal', description:'' };
-      } else if (platCourant) {
-        if (l.toLowerCase().includes('rapide')) platCourant.temps = 'rapide';
-        const stripped = l.replace(/\*{1,2}/g,'').replace(/^[-:•*]+/,'').trim();
-        if (stripped.length > 15 && !stripped.match(/^\d+[\.\)]/)) {
-          platCourant.description += (platCourant.description ? ' ' : '') + stripped;
-        }
-      }
-    });
-    if (platCourant) platsDetectes.push(platCourant);
-    if (platsDetectes.length) {
-      const cartesHtml = platsDetectes.map(p => {
-        const nomEsc = p.nom.replace(/'/g,"\\'");
-        const descEsc = p.description.replace(/'/g,"\\'").replace(/\n/g,' ').substring(0,200);
-        return `<div style="background:var(--surface-1);border-radius:8px;margin-top:6px;padding:8px 10px">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-            <span style="font-size:13px;font-weight:600">${p.nom}</span>
-            <button data-platnom="${p.nom}" onclick="ajouterPlatIA('${nomEsc}','${p.temps}','','${descEsc}')" style="padding:4px 10px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0"><i class="ti ti-plus"></i> Ajouter</button>
+    const txt = d.content.map(c=>c.text||'').join('');
+    let plats = [];
+    try { plats = JSON.parse(txt.replace(/```json|```/g,'').trim()); } catch(e) { rep.textContent = txt; return; }
+    // Affichage lisible
+    rep.textContent = plats.map((p,i) => `${i+1}. ${p.nom} (${p.temps})\n   ${p.description}`).join('\n\n');
+    // Cartes avec bouton individuel
+    const cartesHtml = plats.map(p => {
+      const nomEsc = p.nom.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const descEsc = (p.description||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").substring(0,200);
+      const ingrStr = (p.ingredients||[]).join(', ');
+      const ingrEsc = ingrStr.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const profilsStr = JSON.stringify(profilsIds).replace(/'/g,"\\'");
+      return `<div style="background:var(--surface-1);border:1px solid var(--border);border-radius:8px;margin-top:6px;padding:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${p.nom} <span style="font-size:11px;color:var(--text-muted);font-weight:400">(${p.temps})</span></div>
+            ${ingrStr ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">${ingrStr}</div>` : ''}
+            ${p.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:4px;font-style:italic">${p.description}</div>` : ''}
           </div>
-          ${p.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:3px">${p.description.substring(0,150)}</div>` : ''}
-        </div>`;
-      }).join('');
-      document.getElementById('ia-actions').innerHTML = cartesHtml;
-    }
+          <button data-platnom="${p.nom}" onclick="ajouterPlatIA('${nomEsc}','${p.temps}','${ingrEsc}','${descEsc}',${profilsStr})" style="padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit"><i class="ti ti-plus"></i> Ajouter</button>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('ia-actions').innerHTML = cartesHtml;
     document.getElementById('ia-actions').style.display = 'flex';
     document.getElementById('ia-actions').style.flexDirection = 'column';
   } catch(e) { rep.textContent = '❌ Erreur de connexion. Réessaie.'; }
@@ -1102,7 +1092,7 @@ window.ajouterDepuisIA = async () => {
   alert(`"${nom}" ajouté à tes plats découverts !`);
 };
 
-window.ajouterPlatIA = async (nom, temps, ingredients, description) => {
+window.ajouterPlatIA = async (nom, temps, ingredients, description, profils) => {
   if (data.plats.find(p=>p.nom.toLowerCase()===nom.toLowerCase())) {
     alert(`"${nom}" est déjà dans ta bibliothèque !`);
     return;
@@ -1115,7 +1105,7 @@ window.ajouterPlatIA = async (nom, temps, ingredients, description) => {
     ingredients: ingredients ? ingredients.split(',').map(x=>x.trim()).filter(Boolean) : [],
     notes: description || 'Suggéré par l\'IA',
     categorie:'plats_decouverts',
-    profils:[]
+    profils: Array.isArray(profils) ? profils : []
   });
   await sauvegarder();
   const btns = document.querySelectorAll(`[data-platnom="${CSS.escape(nom)}"]`);
