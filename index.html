@@ -1053,7 +1053,7 @@ Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les p
     const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1500';
     const r = await fetch(proxyUrl2, {redirect:'follow', credentials:'omit'});
     const d = await r.json();
-    if (d.quota_depasse) { rep.textContent = '⏳ Quota IA atteint pour aujourd'hui. Réessaie dans quelques heures.'; return; }
+    if (d.quota_depasse) { rep.textContent = '⏳ Quota IA atteint pour aujourd\'hui. Réessaie dans quelques heures.'; return; }
     if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
     const txt = d.content.map(c=>c.text||'').join('');
     let plats = [];
