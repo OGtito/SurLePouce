@@ -264,6 +264,24 @@ textarea{min-height:70px;resize:vertical}
       </div>
     </div>
     <div class="param-section">
+      <h3>Planning</h3>
+      <div class="param-row">
+        <div class="param-info">
+          <div class="param-label">Premier jour de la semaine</div>
+          <div class="param-desc">Choisir le jour de début du planning</div>
+        </div>
+        <select id="param-premier-jour" onchange="sauvegarderPremierJour(this.value)" style="width:auto;padding:6px 10px;font-size:13px;border:1px solid var(--border-strong);border-radius:var(--radius)">
+          <option value="1">Lundi</option>
+          <option value="2">Mardi</option>
+          <option value="3">Mercredi</option>
+          <option value="4">Jeudi</option>
+          <option value="5">Vendredi</option>
+          <option value="6">Samedi</option>
+          <option value="0">Dimanche</option>
+        </select>
+      </div>
+    </div>
+    <div class="param-section">
       <h3>Informations</h3>
       <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v1.1</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
@@ -399,6 +417,17 @@ let unsubscribe = null;
 let currentUser = null;
 
 const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const JOURS_ISO = [1,2,3,4,5,6,0]; // ISO: 1=Lundi ... 6=Samedi, 0=Dimanche
+
+function getPremierJour() {
+  return parseInt(data.parametres?.premier_jour ?? 1);
+}
+
+function getJoursOrdonnes() {
+  const premier = getPremierJour();
+  const idx = JOURS_ISO.indexOf(premier);
+  return [...JOURS.slice(idx), ...JOURS.slice(0, idx)];
+}
 
 // ===================== AUTH =====================
 window.signerAvecGoogle = async () => {
@@ -461,6 +490,7 @@ function renderTout() {
   renderCourses();
   renderIAProfils();
   renderParamStats();
+  chargerPremierJour();
 }
 
 // ===================== NAVIGATION =====================
@@ -473,6 +503,18 @@ window.showSection = (id, btn) => {
 };
 
 // ===================== EXPORT / IMPORT =====================
+window.sauvegarderPremierJour = async (val) => {
+  if (!data.parametres) data.parametres = {};
+  data.parametres.premier_jour = parseInt(val);
+  await sauvegarder();
+};
+
+function chargerPremierJour() {
+  const val = data.parametres?.premier_jour ?? 1;
+  const sel = document.getElementById('param-premier-jour');
+  if (sel) sel.value = String(val);
+}
+
 window.exporterJSON = () => {
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
@@ -722,7 +764,8 @@ function renderPlanning() {
   const cle = cleSemaine(lundi);
   if (!data.planning[cle]) data.planning[cle] = {};
 
-  document.getElementById('grid-planning').innerHTML = JOURS.map((jour, jourIndex) => {
+  const joursOrdonnes = getJoursOrdonnes();
+  document.getElementById('grid-planning').innerHTML = joursOrdonnes.map((jour, jourIndex) => {
     const jKey = jour.toLowerCase();
     return `<div class="planning-jour">
       <div class="planning-jour-header">${jour}</div>
@@ -922,8 +965,6 @@ window.genererCourses = async () => {
   const platsPlanifies = [];
   const restesUtilises = [];
   JOURS.forEach(j => {
-    const jd = sem[j.toLowerCase()] || {};
-    const creneaux = jd.creneaux || {};
     ['midi','soir'].forEach(m => {
       (creneaux[m] || []).forEach(ligne => {
         if (!ligne.platId) return;
@@ -1062,11 +1103,11 @@ Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les p
     rep.textContent = plats.map((p,i) => `${i+1}. ${p.nom} (${p.temps})\n   ${p.description}`).join('\n\n');
     // Cartes avec bouton individuel
     const cartesHtml = plats.map(p => {
-      const nomEsc = p.nom.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      const descEsc = (p.description||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").substring(0,200);
       const ingrStr = (p.ingredients||[]).join(', ');
-      const ingrEsc = ingrStr.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      const profilsStr = JSON.stringify(profilsIds).replace(/'/g,"\\'");
+      const idx = plats.indexOf(p);
+      // Stocker les données dans un objet global pour éviter les problèmes d'apostrophes dans onclick
+      window._platsIA = window._platsIA || {};
+      window._platsIA[idx] = {nom:p.nom, temps:p.temps, ingredients:ingrStr, description:p.description||'', profils:profilsIds};
       return `<div style="background:var(--surface-1);border:1px solid var(--border);border-radius:8px;margin-top:6px;padding:10px">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
           <div style="flex:1">
@@ -1074,7 +1115,7 @@ Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les p
             ${ingrStr ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">${ingrStr}</div>` : ''}
             ${p.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:4px;font-style:italic">${p.description}</div>` : ''}
           </div>
-          <button data-platnom="${p.nom}" onclick="ajouterPlatIA('${nomEsc}','${p.temps}','${ingrEsc}','${descEsc}',${profilsStr})" style="padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit"><i class="ti ti-plus"></i> Ajouter</button>
+          <button data-idx="${idx}" onclick="ajouterPlatIAIdx(this.dataset.idx)" style="padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit"><i class="ti ti-plus"></i> Ajouter</button>
         </div>
       </div>`;
     }).join('');
@@ -1090,6 +1131,14 @@ window.ajouterDepuisIA = async () => {
   data.plats.push({id:'p_'+Date.now(),nom:nom.trim(),temps:'normal',moment:'tous',ingredients:[],notes:'Suggéré par l\'IA',categorie:'plats_decouverts',profils:[]});
   await sauvegarder();
   alert(`"${nom}" ajouté à tes plats découverts !`);
+};
+
+window.ajouterPlatIAIdx = async (idx) => {
+  const p = window._platsIA && window._platsIA[idx];
+  if (!p) return;
+  await ajouterPlatIA(p.nom, p.temps, p.ingredients, p.description, p.profils);
+  const btn = document.querySelector(`[data-idx="${idx}"]`);
+  if (btn) { btn.textContent = '✓ Ajouté'; btn.disabled = true; btn.style.background = '#E1F5EE'; btn.style.color = 'var(--green-dark)'; }
 };
 
 window.ajouterPlatIA = async (nom, temps, ingredients, description, profils) => {
