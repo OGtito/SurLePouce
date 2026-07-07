@@ -718,20 +718,41 @@ window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
 // Récupère les plats déjà cuisinés les jours PRECEDENTS de la semaine courante
 function restesDisponibles(cle, jourIndex) {
   const sem = data.planning[cle] || {};
-  const restes = [];
   const joursOrd = getJoursOrdonnes();
+  // Collecter les restes déclarés
+  const restesDecl = new Set();
+  // Collecter les restes consommés (utilisés comme repas)
+  const restesConsommes = new Set();
+
   joursOrd.slice(0, jourIndex).forEach(j => {
     const creneaux = (sem[j.toLowerCase()] || {}).creneaux || {};
     ['midi','soir'].forEach(m => {
       (creneaux[m] || []).forEach(ligne => {
-        if (!ligne.aReste || !ligne.platId) return;
+        if (!ligne.platId) return;
         const pid = ligne.platId.startsWith('reste:') ? ligne.platId.replace('reste:','') : ligne.platId;
-        const p = data.plats.find(x=>x.id===pid);
-        if (p && !restes.find(r=>r.id===p.id)) restes.push(p);
+
+        // Ce repas est un reste consommé
+        if (ligne.platId.startsWith('reste:')) {
+          restesConsommes.add(pid);
+          // Si ce reste consommé a lui-même un reste déclaré, il redevient disponible
+          if (ligne.aReste) restesDecl.add(pid);
+        } else {
+          // Plat normal avec reste déclaré
+          if (ligne.aReste) restesDecl.add(pid);
+        }
       });
     });
   });
-  return restes;
+
+  // Disponibles = déclarés MOINS consommés (sauf si re-déclarés)
+  const disponibles = [];
+  restesDecl.forEach(pid => {
+    if (!restesConsommes.has(pid)) {
+      const p = data.plats.find(x=>x.id===pid);
+      if (p) disponibles.push(p);
+    }
+  });
+  return disponibles;
 }
 
 function optsPlat(cle, jourIndex) {
