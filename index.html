@@ -913,12 +913,11 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   resteBtn.innerHTML = '🥗';
   resteBtn.onclick = async () => {
     if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+    _ajoutLigneEnCours = true;
     const newVal = !data.planning[cle][jKey].creneaux[moment][li].aReste;
     data.planning[cle][jKey].creneaux[moment][li].aReste = newVal;
     await sauvegarder();
-    resteBtn.style.cssText = newVal ? 'color:#1D9E75;border-color:#5DCAA5;background:#E1F5EE' : '';
-    resteBtn.title = newVal ? 'Reste déclaré - cliquer pour annuler' : 'Déclarer un reste';
-    // Rafraîchir le planning pour mettre à jour les restes disponibles
+    _ajoutLigneEnCours = false;
     renderPlanning();
   };
 
