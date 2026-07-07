@@ -716,34 +716,32 @@ function cleSemaine(d) { return d.toISOString().slice(0,10); }
 window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
 
 // Récupère les plats déjà cuisinés les jours PRECEDENTS de la semaine courante
-function platsCuisinésAvant(cle, jourIndex) {
+function restesDisponibles(cle, jourIndex) {
   const sem = data.planning[cle] || {};
-  const platIds = new Set();
-  JOURS.slice(0, jourIndex).forEach(j => {
-    const jd = sem[j.toLowerCase()] || {};
-    const creneaux = jd.creneaux || {};
+  const restes = [];
+  const joursOrd = getJoursOrdonnes();
+  joursOrd.slice(0, jourIndex).forEach(j => {
+    const creneaux = (sem[j.toLowerCase()] || {}).creneaux || {};
     ['midi','soir'].forEach(m => {
       (creneaux[m] || []).forEach(ligne => {
-        if (ligne.platId && !ligne.platId.startsWith('reste:')) platIds.add(ligne.platId);
+        if (!ligne.aReste || !ligne.platId) return;
+        const pid = ligne.platId.startsWith('reste:') ? ligne.platId.replace('reste:','') : ligne.platId;
+        const p = data.plats.find(x=>x.id===pid);
+        if (p && !restes.find(r=>r.id===p.id)) restes.push(p);
       });
     });
   });
-  return [...platIds];
+  return restes;
 }
 
-// Génère les options du sélecteur de plat avec section "Restes"
 function optsPlat(cle, jourIndex) {
-  const restes = platsCuisinésAvant(cle, jourIndex);
-  let html = '<option value="">— Choisir —</option>';
-  html += '<optgroup label="🍽️ Plats">';
+  const restes = restesDisponibles(cle, jourIndex);
+  let html = '<option value="">— Choisir —</option><optgroup label="🍽️ Plats">';
   data.plats.forEach(p => { html += `<option value="${p.id}">${p.nom}</option>`; });
   html += '</optgroup>';
   if (restes.length) {
     html += '<optgroup label="♻️ Restes">';
-    restes.forEach(id => {
-      const p = data.plats.find(x=>x.id===id);
-      if (p) html += `<option value="reste:${p.id}">Reste : ${p.nom}</option>`;
-    });
+    restes.forEach(p => { html += `<option value="reste:${p.id}">Reste : ${p.nom}</option>`; });
     html += '</optgroup>';
   }
   return html;
@@ -885,6 +883,24 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   platSel.onchange = (e) => majLigne(cle, jKey, moment, li, 'platId', e.target.value);
   platSelDiv.appendChild(platSel);
 
+  // Bouton 🥗 reste (toggle)
+  const resteBtn = document.createElement('button');
+  const aReste = ligne?.aReste || false;
+  resteBtn.className = 'btn-icon';
+  resteBtn.title = aReste ? 'Reste déclaré - cliquer pour annuler' : 'Déclarer un reste';
+  resteBtn.style.cssText = aReste ? 'color:#1D9E75;border-color:#5DCAA5;background:#E1F5EE' : '';
+  resteBtn.innerHTML = '🥗';
+  resteBtn.onclick = async () => {
+    if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+    const newVal = !data.planning[cle][jKey].creneaux[moment][li].aReste;
+    data.planning[cle][jKey].creneaux[moment][li].aReste = newVal;
+    await sauvegarder();
+    resteBtn.style.cssText = newVal ? 'color:#1D9E75;border-color:#5DCAA5;background:#E1F5EE' : '';
+    resteBtn.title = newVal ? 'Reste déclaré - cliquer pour annuler' : 'Déclarer un reste';
+    // Rafraîchir le planning pour mettre à jour les restes disponibles
+    renderPlanning();
+  };
+
   // Bouton supprimer
   const btnsDiv = document.createElement('div');
   btnsDiv.className = 'planning-ligne-btns';
@@ -892,6 +908,7 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
 
   div.appendChild(profilSelDiv);
   div.appendChild(platSelDiv);
+  div.appendChild(resteBtn);
   div.appendChild(btnsDiv);
   container.appendChild(div);
 
@@ -927,6 +944,14 @@ window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
     const li = data.planning[cle][jKey].creneaux[moment].length - 1;
     renderLigne(cle, jKey, moment, jourIndex, nouvelleLigne, li);
   }
+};
+
+window.toggleReste = async (cle, jKey, moment, li, btn) => {
+  if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+  const newVal = !data.planning[cle][jKey].creneaux[moment][li].aReste;
+  data.planning[cle][jKey].creneaux[moment][li].aReste = newVal;
+  await sauvegarder();
+  renderPlanning();
 };
 
 window.majLigne = async (cle, jKey, moment, li, champ, valeur) => {
