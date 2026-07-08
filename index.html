@@ -69,8 +69,11 @@ textarea{min-height:70px;resize:vertical}
 .badge{background:#E1F5EE;color:var(--green-dark);border-radius:20px;font-size:11px;padding:1px 6px;margin-left:4px}
 .semaine-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .semaine-label{flex:1;text-align:center;font-size:14px;font-weight:600}
+
+/* PLANNING NOUVEAU */
 .planning-jour{background:white;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:visible}
-.planning-jour-header{border-radius:12px 12px 0 0;background:var(--surface-1);padding:8px 12px;font-weight:600;font-size:14px}
+.planning-jour-header{border-radius:12px 12px 0 0}
+.planning-jour-header{background:var(--surface-1);padding:8px 12px;font-weight:600;font-size:14px}
 .planning-creneau{padding:8px 10px;border-bottom:1px solid var(--border)}
 .planning-creneau:last-child{border-bottom:none}
 .planning-creneau-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:4px}
@@ -91,171 +94,1128 @@ textarea{min-height:70px;resize:vertical}
 .btn-icon.add{color:var(--green);border-color:#5DCAA5}
 .btn-icon.del{color:var(--coral);border-color:var(--coral-light)}
 .reste-badge{font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:500}
+
+.rayon-titre{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.checklist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.checklist-item:last-child{border-bottom:none}
+.checklist-item input[type=checkbox]{width:20px;height:20px;cursor:pointer;accent-color:var(--green);flex-shrink:0}
+.checklist-item.done span{text-decoration:line-through;color:var(--text-muted)}
+.ia-zone{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px}
+.ia-reponse{font-size:14px;line-height:1.8;white-space:pre-wrap}
+.loading-dots::after{content:'...';animation:dots 1.5s infinite}
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
+.profil-card{background:white;border:2px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.profil-color-box{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
+.profil-nom{font-weight:600;font-size:15px}
+.profil-details{font-size:12px;color:var(--text-muted);margin-top:2px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;border-radius:12px;background:var(--border-strong);cursor:pointer;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--green)}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:.2s}
+.toggle input:checked+.toggle-slider:before{left:21px}
+.empty{color:var(--text-muted);font-size:14px;text-align:center;padding:2rem 1rem;line-height:1.6}
+.color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-option{width:32px;height:32px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:all .15s}
+.color-option.selected{border-color:var(--text-primary)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-header h3{font-size:17px;font-weight:600}
+.param-section{margin-bottom:20px}
+.param-section h3{font-size:14px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.param-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.param-row:last-child{border-bottom:none}
+.param-info{flex:1}
+.param-label{font-size:14px;font-weight:500}
+.param-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+.alert-box{background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;padding:10px 14px;font-size:13px;color:#7A4E0E;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start}
 </style>
 </head>
 <body>
 
 <div id="auth-screen">
+  <div style="font-size:3rem;margin-bottom:1rem">🍽️</div>
   <h1>SurLePouce</h1>
-  <p>Gérez vos repas simplement.</p>
-  <button class="btn-google" id="login-btn"><img src="https://www.google.com/favicon.ico" alt="">Connexion avec Google</button>
+  <p>Ton assistant repas familial</p>
+  <button class="btn-google" onclick="signerAvecGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    Continuer avec Google
+  </button>
+  <p id="auth-error" style="color:#D85A30;margin-top:1rem;font-size:13px"></p>
 </div>
 
 <div id="app">
-  <header class="app-header">
-    <h1>SurLePouce</h1>
+  <div class="app-header">
+    <h1>🍽️ SurLePouce</h1>
     <div class="flex">
-      <button class="btn-signout" id="logout-btn">Déconnexion</button>
-      <img id="user-avatar" class="user-avatar" src="" alt="User">
+      <img id="user-photo" class="user-avatar" src="" alt="" style="display:none">
+      <button class="btn-signout" onclick="seDeconnecter()"><i class="ti ti-logout"></i></button>
     </div>
-  </header>
+  </div>
 
-  <main id="content">
-    <div id="section-planning" class="section active">
-      <div class="semaine-nav">
-        <button class="btn btn-icon" id="prev-week"><i class="ti ti-chevron-left"></i></button>
-        <div class="semaine-label" id="semaine-label">Semaine actuelle</div>
-        <button class="btn btn-icon" id="next-week"><i class="ti ti-chevron-right"></i></button>
+  <!-- PLATS -->
+  <div id="s-plats" class="section active">
+    <div class="flex-between" style="margin-bottom:16px">
+      <h2 style="margin:0">Mes plats</h2>
+      <button class="btn btn-primary btn-sm" onclick="ouvrirModalPlat()"><i class="ti ti-plus"></i> Ajouter</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="filtrerPlats('tous',this)">Tous <span class="badge" id="b-tous">0</span></button>
+      <button class="tab" onclick="filtrerPlats('rapide',this)">Rapides <span class="badge" id="b-rapide">0</span></button>
+      <button class="tab" onclick="filtrerPlats('normal',this)">Long <span class="badge" id="b-normal">0</span></button>
+      <button class="tab" onclick="filtrerPlats('decouvert',this)">Découverts <span class="badge" id="b-decouvert">0</span></button>
+    </div>
+    <div id="liste-plats"><div class="empty">Aucun plat encore.<br>Ajoute ton premier plat !</div></div>
+  </div>
+
+  <!-- PLANNING -->
+  <div id="s-planning" class="section">
+    <div class="semaine-nav">
+      <button class="btn btn-sm" onclick="changerSemaine(-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="semaine-label" id="semaine-label"></div>
+      <button class="btn btn-sm" onclick="changerSemaine(1)"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div id="grid-planning"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="genererCourses()">
+      <i class="ti ti-shopping-cart"></i> Générer la liste de courses
+    </button>
+  </div>
+
+  <!-- COURSES -->
+  <div id="s-courses" class="section">
+    <div class="flex-between" style="margin-bottom:16px">
+      <h2 style="margin:0">Liste de courses</h2>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="reinitCourses()"><i class="ti ti-refresh"></i> Tout décocher</button>
+        <button class="btn btn-sm btn-danger" onclick="effacerCourses()"><i class="ti ti-trash"></i> Effacer</button>
       </div>
-      <div id="planning-container"></div>
     </div>
+    <div id="courses-content"><div class="empty">Aucune liste générée.<br>Remplis le planning puis génère la liste.</div></div>
+  </div>
 
-    <div id="section-plats" class="section">
-      <div class="flex-between" style="margin-bottom:16px">
-        <h2>Mes Recettes</h2>
-        <button class="btn btn-primary" onclick="showPlatModal()"><i class="ti ti-plus"></i>Ajouter</button>
+  <!-- IA -->
+  <div id="s-ia" class="section">
+    <h2>Suggestions IA</h2>
+    <div class="card">
+      <label>Qui mange ?</label>
+      <div id="ia-profils-sel" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
+      <label>Contrainte de temps</label>
+      <select id="ia-temps">
+        <option value="rapide">Je suis pressé (moins de 20 min)</option>
+        <option value="normal">J'ai le temps</option>
+        <option value="tous">Sans préférence</option>
+      </select>
+      <label>Envie particulière (facultatif)</label>
+      <input type="text" id="ia-envie" placeholder="Ex: quelque chose de léger, avec du poulet...">
+      <label>Type de suggestion</label>
+      <select id="ia-type">
+        <option value="suggestion">Idées depuis nos habitudes</option>
+        <option value="declinaison">Décliner un de nos plats</option>
+        <option value="croisement">Croiser deux de nos plats</option>
+        <option value="nouveau">Nouveaux plats dans notre style</option>
+      </select>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="demanderIA()">
+        <i class="ti ti-sparkles"></i> Demander à l'IA
+      </button>
+    </div>
+    <div class="ia-zone" id="ia-zone" style="display:none">
+      <div class="ia-reponse" id="ia-reponse"></div>
+      <div class="flex-end" id="ia-actions" style="display:none">
+        <button class="btn btn-sm btn-primary" onclick="ajouterDepuisIA()"><i class="ti ti-plus"></i> Ajouter à mes plats</button>
       </div>
-      <div id="plats-list"></div>
     </div>
+  </div>
 
-    <div id="section-profils" class="section">
-      <h2>Profils</h2>
-      <div id="profils-list"></div>
-      <div class="card">
-        <h3>Ajouter un profil</h3>
-        <input type="text" id="new-profil-name" placeholder="Nom du membre...">
-        <div class="flex-end">
-          <button class="btn btn-primary" id="save-profil">Enregistrer</button>
+  <!-- PROFILS -->
+  <div id="s-profils" class="section">
+    <div class="flex-between" style="margin-bottom:16px">
+      <h2 style="margin:0">Profils</h2>
+      <button class="btn btn-primary btn-sm" onclick="ouvrirModalProfil()"><i class="ti ti-plus"></i> Ajouter</button>
+    </div>
+    <div id="liste-profils"></div>
+  </div>
+
+  <!-- PARAMETRES -->
+  <div id="s-parametres" class="section">
+    <h2>Paramètres</h2>
+    <div class="param-section">
+      <h3>Sauvegarde locale</h3>
+      <div class="alert-box">
+        <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
+        <span>Les données sont synchronisées en temps réel sur Firebase. La sauvegarde locale est une copie de sécurité que tu peux stocker sur ton téléphone ou Google Drive.</span>
+      </div>
+      <div class="param-row">
+        <div class="param-info">
+          <div class="param-label">Exporter les données</div>
+          <div class="param-desc">Télécharge un fichier surlepouce-backup.json sur ton appareil</div>
         </div>
+        <button class="btn btn-primary btn-sm" onclick="exporterJSON()"><i class="ti ti-download"></i> Exporter</button>
+      </div>
+      <div class="param-row">
+        <div class="param-info">
+          <div class="param-label">Importer des données</div>
+          <div class="param-desc">Restaure depuis un fichier JSON sauvegardé (⚠️ remplace les données actuelles)</div>
+        </div>
+        <button class="btn btn-warning btn-sm" onclick="document.getElementById('import-file').click()"><i class="ti ti-upload"></i> Importer</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importerJSON(this)">
       </div>
     </div>
-  </main>
+    <div class="param-section">
+      <h3>Planning</h3>
+      <div class="param-row">
+        <div class="param-info">
+          <div class="param-label">Premier jour de la semaine</div>
+          <div class="param-desc">Choisir le jour de début du planning</div>
+        </div>
+        <select id="param-premier-jour" onchange="sauvegarderPremierJour(this.value)" style="width:auto;padding:6px 10px;font-size:13px;border:1px solid var(--border-strong);border-radius:var(--radius)">
+          <option value="1">Lundi</option>
+          <option value="2">Mardi</option>
+          <option value="3">Mercredi</option>
+          <option value="4">Jeudi</option>
+          <option value="5">Vendredi</option>
+          <option value="6">Samedi</option>
+          <option value="0">Dimanche</option>
+        </select>
+      </div>
+    </div>
+    <div class="param-section">
+      <h3>Informations</h3>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v1.1</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
+    </div>
+    <div class="param-section">
+      <h3>Compte</h3>
+      <div class="param-row">
+        <div class="param-info"><div class="param-label">Se déconnecter</div><div class="param-desc">Ferme ta session sur cet appareil</div></div>
+        <button class="btn btn-danger btn-sm" onclick="seDeconnecter()"><i class="ti ti-logout"></i> Déconnexion</button>
+      </div>
+    </div>
+  </div>
 
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="showSection('planning')"><i class="ti ti-calendar"></i>Planning</button>
-    <button class="nav-item" onclick="showSection('plats')"><i class="ti ti-bowl"></i>Recettes</button>
-    <button class="nav-item" onclick="showSection('profils')"><i class="ti ti-users"></i>Profils</button>
+    <button class="nav-item active" onclick="showSection('plats',this)"><i class="ti ti-book-2"></i><span>Plats</span></button>
+    <button class="nav-item" onclick="showSection('planning',this)"><i class="ti ti-calendar-week"></i><span>Planning</span></button>
+    <button class="nav-item" onclick="showSection('courses',this)"><i class="ti ti-shopping-cart"></i><span>Courses</span></button>
+    <button class="nav-item" onclick="showSection('ia',this)"><i class="ti ti-sparkles"></i><span>IA</span></button>
+    <button class="nav-item" onclick="showSection('profils',this)"><i class="ti ti-users"></i><span>Profils</span></button>
+    <button class="nav-item" onclick="showSection('parametres',this)"><i class="ti ti-settings"></i><span>Réglages</span></button>
   </nav>
 </div>
 
-<!-- Modal Plat -->
-<div id="modal-plat" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;padding:20px;align-items:center;justify-content:center">
-  <div class="card" style="width:100%;max-width:400px">
-    <h3 id="modal-title">Ajouter une recette</h3>
+<!-- MODAL PLAT -->
+<div id="modal-plat" class="modal-overlay" style="display:none" onclick="fermerModalSiOverlay(event,'modal-plat')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-plat-titre">Nouveau plat</h3>
+      <button class="btn btn-sm" onclick="fermerModal('modal-plat')"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="plat-edit-id">
     <label>Nom du plat</label>
-    <input type="text" id="plat-nom" placeholder="Ex: Lasagnes">
-    <label>Type</label>
-    <select id="plat-type">
-      <option value="normal">Normal</option>
-      <option value="rapide">Rapide</option>
-      <option value="decouvert">Découverte</option>
+    <input type="text" id="f-nom" placeholder="Ex: Salade niçoise">
+    <label>Temps de préparation</label>
+    <select id="f-temps">
+      <option value="rapide">Rapide (moins de 20 min)</option>
+      <option value="normal">Normal (plus de 20 min)</option>
     </select>
+    <label>Moment idéal</label>
+    <select id="f-moment">
+      <option value="tous">Midi et soir</option>
+      <option value="midi">Midi seulement</option>
+      <option value="soir">Soir seulement</option>
+    </select>
+    <label>Ingrédients principaux (séparés par des virgules)</label>
+    <input type="text" id="f-ingredients" placeholder="Ex: thon, tomates, œufs, olives">
+    <label>Profils compatibles</label>
+    <div id="f-profils-check" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+    <label>Notes / variantes</label>
+    <textarea id="f-notes" placeholder="Notes, astuces de préparation..."></textarea>
     <div class="flex-end">
-      <button class="btn" onclick="closePlatModal()">Annuler</button>
-      <button class="btn btn-primary" id="save-plat">Enregistrer</button>
+      <button class="btn btn-sm" onclick="fermerModal('modal-plat')">Annuler</button>
+      <button class="btn btn-primary btn-sm" onclick="sauvegarderPlat()"><i class="ti ti-device-floppy"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROFIL -->
+<div id="modal-profil" class="modal-overlay" style="display:none" onclick="fermerModalSiOverlay(event,'modal-profil')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-profil-titre">Nouveau profil</h3>
+      <button class="btn btn-sm" onclick="fermerModal('modal-profil')"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="profil-edit-id">
+    <label>Prénom</label>
+    <input type="text" id="p-prenom" placeholder="Ex: Olivier">
+    <label>Couleur</label>
+    <div class="color-picker" id="color-picker">
+      <div class="color-option selected" data-color="#1D9E75" style="background:#1D9E75" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#185FA5" style="background:#185FA5" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#D85A30" style="background:#D85A30" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#BA7517" style="background:#BA7517" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#993556" style="background:#993556" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#534AB7" style="background:#534AB7" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#444441" style="background:#444441" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#0F6E56" style="background:#0F6E56" onclick="selColor(this)"></div>
+    </div>
+    <label>Emoji / pictogramme</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="emoji-picker">
+      <span class="color-option selected" data-emoji="👤" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid #1a1a1a" onclick="selEmoji(this)">👤</span>
+      <span class="color-option" data-emoji="👨" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👨</span>
+      <span class="color-option" data-emoji="👩" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👩</span>
+      <span class="color-option" data-emoji="👦" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👦</span>
+      <span class="color-option" data-emoji="👧" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👧</span>
+      <span class="color-option" data-emoji="🧔" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">🧔</span>
+    </div>
+    <label style="margin-top:14px">Préférences alimentaires</label>
+    <div class="card" style="margin-top:6px;padding:10px">
+      <div class="toggle-row"><span style="font-size:14px">Légumes cuits</span><label class="toggle"><input type="checkbox" id="p-legcuits"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span style="font-size:14px">Légumes crus</span><label class="toggle"><input type="checkbox" id="p-legcrus" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span style="font-size:14px">Viande</span><label class="toggle"><input type="checkbox" id="p-viande" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span style="font-size:14px">Poisson</span><label class="toggle"><input type="checkbox" id="p-poisson" checked><span class="toggle-slider"></span></label></div>
+    </div>
+    <label>Allergies / aliments à éviter</label>
+    <input type="text" id="p-allergies" placeholder="Ex: gluten, fruits de mer, abats...">
+    <div class="flex-end">
+      <button class="btn btn-sm" onclick="fermerModal('modal-profil')">Annuler</button>
+      <button class="btn btn-primary btn-sm" onclick="sauvegarderProfil()"><i class="ti ti-device-floppy"></i> Enregistrer</button>
     </div>
   </div>
 </div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  // AJOUTE TA CONFIGURATION FIREBASE ICI
+  apiKey: "AIzaSyAPtRL3OQUqexLmPAxwGbuMZNCEtyalrrc",
+  authDomain: "surlepouce-aaaf9.firebaseapp.com",
+  projectId: "surlepouce-aaaf9",
+  storageBucket: "surlepouce-aaaf9.firebasestorage.app",
+  messagingSenderId: "799645038220",
+  appId: "1:799645038220:web:6062d116e01738ee5cada9"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const EMAILS_AUTORISES = ['24.24oliviergsm@gmail.com','24.24cecilegsm@gmail.com'];
 
+let data = { profils:[], plats:[], planning:{}, liste_courses:{} };
+let filtreActuel = 'tous';
+let semaineOffset = 0;
+let colorSelectionnee = '#1D9E75';
+let emojiSelectionne = '👤';
+let dernierIAReponse = '';
+let _ajoutLigneEnCours = false;
+let unsubscribe = null;
 let currentUser = null;
-let _isRendering = false;
-let currentWeekOffset = 0;
-let data = { plats: [], profils: [], planning: {} };
-// --- CORRECTION LOGIQUE : Verrou de rendu et calcul des restes ---
 
-async function sauvegarder() {
-  _isRendering = true; // Empêche les fuites pendant l'écriture
-  try {
-    await setDoc(doc(db, 'surlepouce', 'famille'), data);
-  } catch(e) { console.error(e); }
-  _isRendering = false;
+const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const JOURS_ISO = [1,2,3,4,5,6,0]; // ISO: 1=Lundi ... 6=Samedi, 0=Dimanche
+
+function getPremierJour() {
+  return parseInt(data.parametres?.premier_jour ?? 1);
 }
 
-// Fonction de calcul des restes corrigée pour éviter l'aléatoire
-window.getRestesDisponibles = (semaineKey, currentJourIndex, currentMomentIndex) => {
-  const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
-  const restes = [];
-  const consommés = new Set();
+function getJoursOrdonnes() {
+  const premier = getPremierJour();
+  const idx = JOURS_ISO.indexOf(premier);
+  return [...JOURS.slice(idx), ...JOURS.slice(0, idx)];
+}
 
-  for (let j = 0; j <= currentJourIndex; j++) {
-    const jourKey = jours[j];
-    const planningJour = data.planning[semaineKey]?.[jourKey]?.creneaux || { midi: [], soir: [] };
-    
-    ['midi', 'soir'].forEach((mKey, mIdx) => {
-      // Si on est sur le créneau actuel, on s'arrête
-      if (j === currentJourIndex && mIdx >= currentMomentIndex) return;
-
-      planningJour[mKey].forEach(ligne => {
-        if (!ligne.platId) return;
-        if (ligne.platId.startsWith('reste:')) {
-          consommés.add(ligne.platId.split(':')[1]);
-        } else if (ligne.aReste) {
-          restes.push({ id: ligne.platId, nom: data.plats.find(p => p.id === ligne.platId)?.nom || 'Plat inconnu' });
-        }
-      });
-    });
+// ===================== AUTH =====================
+window.signerAvecGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    if (!EMAILS_AUTORISES.includes(result.user.email)) {
+      await signOut(auth);
+      document.getElementById('auth-error').textContent = "Accès non autorisé pour cette adresse email.";
+    }
+  } catch(e) {
+    document.getElementById('auth-error').textContent = "Erreur de connexion. Réessaie.";
   }
-  return restes.filter(r => !consommés.has(r.id));
 };
 
-// Fonction de rendu isolée pour éviter les disparitions
-window.renderPlanning = () => {
-  if (_isRendering) return; 
-  // ... (Code de rendu complet qui reconstruit la grille proprement sans écraser les saisies en cours)
-  console.log("Planning mis à jour de manière stable.");
-};
+window.seDeconnecter = () => signOut(auth);
 
-// ... (Ajoute ici le reste de tes fonctions existantes : ajouterLigne, etc.)
-
-// --- Initialisation ---
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
+  if (user && EMAILS_AUTORISES.includes(user.email)) {
     currentUser = user;
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
-    
-    // Écoute temps réel
-    onSnapshot(doc(db, 'surlepouce', 'famille'), (doc) => {
-      if (doc.exists()) {
-        data = doc.data();
-        renderPlanning();
-      }
-    });
+    const photo = document.getElementById('user-photo');
+    if (user.photoURL) { photo.src = user.photoURL; photo.style.display = 'block'; }
+    document.getElementById('param-user-email').textContent = user.email;
+    await chargerDonnees();
   } else {
+    currentUser = null;
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
+    if (unsubscribe) unsubscribe();
   }
 });
 
-// Fonctions de navigation
-window.showSection = (id) => {
+// ===================== FIRESTORE =====================
+async function chargerDonnees() {
+  const ref = doc(db, 'surlepouce', 'famille');
+  unsubscribe = onSnapshot(ref, (snap) => {
+    if (snap.exists()) {
+      data = snap.data();
+      if (!data.profils) data.profils = [];
+      if (!data.plats) data.plats = [];
+      if (!data.planning) data.planning = {};
+      if (!data.liste_courses) data.liste_courses = {};
+    }
+    renderTout();
+  });
+}
+
+async function sauvegarder() {
+  try {
+    await setDoc(doc(db, 'surlepouce', 'famille'), data);
+  } catch(e) { alert('Erreur de sauvegarde : ' + e.message); }
+}
+
+function renderTout() {
+  renderPlats();
+  renderProfils();
+  renderPlanning();
+  renderCourses();
+  renderIAProfils();
+  renderParamStats();
+  chargerPremierJour();
+}
+
+// ===================== NAVIGATION =====================
+window.showSection = (id, btn) => {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('section-' + id).classList.add('active');
-  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'planning') renderPlanning();
+};
+
+// ===================== EXPORT / IMPORT =====================
+window.sauvegarderPremierJour = async (val) => {
+  if (!data.parametres) data.parametres = {};
+  data.parametres.premier_jour = parseInt(val);
+  await sauvegarder();
+};
+
+function chargerPremierJour() {
+  const val = data.parametres?.premier_jour ?? 1;
+  const sel = document.getElementById('param-premier-jour');
+  if (sel) sel.value = String(val);
+}
+
+window.exporterJSON = () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `surlepouce-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+window.importerJSON = async (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  if (!confirm('⚠️ Cette action va remplacer toutes les données actuelles. Es-tu sûr ?')) { input.value=''; return; }
+  try {
+    const text = await file.text();
+    const imported = JSON.parse(text);
+    if (!imported.plats || !imported.profils) { alert('Fichier JSON invalide.'); return; }
+    data = imported;
+    await sauvegarder();
+    renderTout();
+    alert('Données importées avec succès !');
+  } catch(e) { alert('Erreur lors de l\'import : fichier invalide.'); }
+  input.value = '';
+};
+
+function renderParamStats() {
+  document.getElementById('param-nb-plats').textContent = `${data.plats.length} plat(s) enregistré(s)`;
+  document.getElementById('param-nb-profils').textContent = `${data.profils.length} profil(s) configuré(s)`;
+}
+
+// ===================== PROFILS =====================
+window.ouvrirModalProfil = (id) => {
+  document.getElementById('modal-profil-titre').textContent = id ? 'Modifier le profil' : 'Nouveau profil';
+  document.getElementById('profil-edit-id').value = id || '';
+  if (id) {
+    const p = data.profils.find(x => x.id === id);
+    if (p) {
+      document.getElementById('p-prenom').value = p.prenom;
+      document.getElementById('p-legcuits').checked = p.preferences?.legumes_cuits || false;
+      document.getElementById('p-legcrus').checked = p.preferences?.legumes_crus !== false;
+      document.getElementById('p-viande').checked = p.preferences?.viande !== false;
+      document.getElementById('p-poisson').checked = p.preferences?.poisson !== false;
+      document.getElementById('p-allergies').value = (p.allergies||[]).join(', ');
+      colorSelectionnee = p.couleur || '#1D9E75';
+      emojiSelectionne = p.emoji || '👤';
+    }
+  } else {
+    document.getElementById('p-prenom').value = '';
+    document.getElementById('p-allergies').value = '';
+    colorSelectionnee = '#1D9E75'; emojiSelectionne = '👤';
+  }
+  document.querySelectorAll('.color-option[data-color]').forEach(el => el.classList.toggle('selected', el.dataset.color === colorSelectionnee));
+  document.querySelectorAll('#emoji-picker span').forEach(el => el.style.borderColor = el.dataset.emoji === emojiSelectionne ? '#1a1a1a' : 'transparent');
+  document.getElementById('modal-profil').style.display = 'flex';
+};
+
+window.sauvegarderProfil = async () => {
+  const prenom = document.getElementById('p-prenom').value.trim();
+  if (!prenom) { alert('Saisis un prénom !'); return; }
+  const id = document.getElementById('profil-edit-id').value || 'prof_' + Date.now();
+  const profil = {
+    id, prenom, couleur: colorSelectionnee, emoji: emojiSelectionne,
+    preferences: {
+      legumes_cuits: document.getElementById('p-legcuits').checked,
+      legumes_crus: document.getElementById('p-legcrus').checked,
+      viande: document.getElementById('p-viande').checked,
+      poisson: document.getElementById('p-poisson').checked,
+    },
+    allergies: document.getElementById('p-allergies').value.split(',').map(x=>x.trim()).filter(Boolean)
+  };
+  const idx = data.profils.findIndex(p => p.id === id);
+  if (idx >= 0) data.profils[idx] = profil; else data.profils.push(profil);
+  await sauvegarder();
+  fermerModal('modal-profil');
+};
+
+window.supprimerProfil = async (id) => {
+  if (!confirm('Supprimer ce profil ?')) return;
+  data.profils = data.profils.filter(p => p.id !== id);
+  await sauvegarder();
+};
+
+function renderProfils() {
+  const el = document.getElementById('liste-profils');
+  if (!data.profils.length) { el.innerHTML = '<div class="empty">Aucun profil.<br>Ajoute les membres de la famille !</div>'; return; }
+  el.innerHTML = data.profils.map(p => `
+    <div class="profil-card">
+      <div class="profil-color-box" style="background:${p.couleur}20;color:${p.couleur}">${p.emoji}</div>
+      <div style="flex:1">
+        <div class="profil-nom" style="color:${p.couleur}">${p.prenom}</div>
+        <div class="profil-details">Légumes cuits : ${p.preferences?.legumes_cuits?'✓':'✗'} · ${(p.allergies||[]).length?'Évite : '+p.allergies.join(', '):'Aucune allergie'}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="ouvrirModalProfil('${p.id}')"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="supprimerProfil('${p.id}')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+// ===================== PLATS =====================
+window.ouvrirModalPlat = (id) => {
+  document.getElementById('modal-plat-titre').textContent = id ? 'Modifier le plat' : 'Nouveau plat';
+  document.getElementById('plat-edit-id').value = id || '';
+  const checkContainer = document.getElementById('f-profils-check');
+  checkContainer.innerHTML = data.profils.map(p => `
+    <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;margin-top:0">
+      <input type="checkbox" value="${p.id}" style="width:16px;height:16px;accent-color:${p.couleur}">
+      <span style="background:${p.couleur}20;color:${p.couleur};padding:2px 8px;border-radius:20px;font-weight:500">${p.emoji} ${p.prenom}</span>
+    </label>`).join('');
+  if (id) {
+    const pl = data.plats.find(x => x.id === id);
+    if (pl) {
+      document.getElementById('f-nom').value = pl.nom;
+      document.getElementById('f-temps').value = pl.temps;
+      document.getElementById('f-moment').value = pl.moment;
+      document.getElementById('f-ingredients').value = (pl.ingredients||[]).join(', ');
+      document.getElementById('f-notes').value = pl.notes || '';
+      checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = (pl.profils||[]).includes(cb.value); });
+    }
+  } else {
+    ['f-nom','f-ingredients','f-notes'].forEach(i => document.getElementById(i).value = '');
+    checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+  }
+  document.getElementById('modal-plat').style.display = 'flex';
+};
+
+window.sauvegarderPlat = async () => {
+  const nom = document.getElementById('f-nom').value.trim();
+  if (!nom) { alert('Donne un nom au plat !'); return; }
+  const profils = [...document.querySelectorAll('#f-profils-check input:checked')].map(cb => cb.value);
+  const id = document.getElementById('plat-edit-id').value || 'p_' + Date.now();
+  const existant = data.plats.find(p => p.id === id);
+  const plat = {
+    id, nom,
+    temps: document.getElementById('f-temps').value,
+    moment: document.getElementById('f-moment').value,
+    ingredients: document.getElementById('f-ingredients').value.split(',').map(x=>x.trim()).filter(Boolean),
+    notes: document.getElementById('f-notes').value,
+    profils,
+    categorie: existant?.categorie || 'plats_maison'
+  };
+  const idx = data.plats.findIndex(p => p.id === id);
+  if (idx >= 0) data.plats[idx] = plat; else data.plats.push(plat);
+  await sauvegarder();
+  fermerModal('modal-plat');
+};
+
+window.supprimerPlat = async (id) => {
+  if (!confirm('Supprimer ce plat ?')) return;
+  data.plats = data.plats.filter(p => p.id !== id);
+  await sauvegarder();
+};
+
+window.filtrerPlats = (f, btn) => {
+  filtreActuel = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlats();
+};
+
+function renderPlats() {
+  const el = document.getElementById('liste-plats');
+  document.getElementById('b-tous').textContent = data.plats.length;
+  document.getElementById('b-rapide').textContent = data.plats.filter(p=>p.temps==='rapide').length;
+  document.getElementById('b-normal').textContent = data.plats.filter(p=>p.temps==='normal').length;
+  document.getElementById('b-decouvert').textContent = data.plats.filter(p=>p.categorie==='plats_decouverts').length;
+  let plats = data.plats;
+  if (filtreActuel==='rapide') plats = plats.filter(p=>p.temps==='rapide');
+  else if (filtreActuel==='normal') plats = plats.filter(p=>p.temps==='normal');
+  else if (filtreActuel==='decouvert') plats = plats.filter(p=>p.categorie==='plats_decouverts');
+  if (!plats.length) { el.innerHTML = '<div class="empty">Aucun plat trouvé.</div>'; return; }
+  el.innerHTML = plats.map(p => {
+    const badges = (p.profils||[]).map(pid => {
+      const prof = data.profils.find(x=>x.id===pid);
+      return prof ? `<span style="background:${prof.couleur}20;color:${prof.couleur};padding:1px 6px;border-radius:20px;font-size:11px;font-weight:500">${prof.emoji} ${prof.prenom}</span>` : '';
+    }).join('');
+    return `<div class="plat-row">
+      <div class="plat-info">
+        <div class="plat-nom">${p.nom}</div>
+        <div class="plat-meta">${(p.ingredients||[]).slice(0,4).join(', ')||'—'}</div>
+        <div class="plat-profils">${badges}</div>
+      </div>
+      <span class="tag tag-${p.temps}">${p.temps==='rapide'?'Rapide':'Normal'}</span>
+      ${p.categorie==='plats_decouverts'?'<span class="tag tag-decouvert">Découvert</span>':''}
+      <button class="btn btn-sm" onclick="ouvrirModalPlat('${p.id}')"><i class="ti ti-edit"></i></button>
+      <button class="btn btn-sm btn-danger" onclick="supprimerPlat('${p.id}')"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+// ===================== PLANNING =====================
+function lundiDe(offset) {
+  const d = new Date(); const j = d.getDay()||7;
+  d.setDate(d.getDate()-j+1+offset*7); d.setHours(0,0,0,0); return d;
+}
+function fmtDate(d) { return d.toLocaleDateString('fr-FR',{day:'numeric',month:'long'}); }
+function cleSemaine(d) { return d.toISOString().slice(0,10); }
+
+window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
+
+// Récupère les plats déjà cuisinés les jours PRECEDENTS de la semaine courante
+function restesDisponibles(cle, jourIndex) {
+  const sem = data.planning[cle] || {};
+  const joursOrd = getJoursOrdonnes();
+  // Collecter les restes déclarés
+  const restesDecl = new Set();
+  // Collecter les restes consommés (utilisés comme repas)
+  const restesConsommes = new Set();
+
+  joursOrd.slice(0, jourIndex).forEach(j => {
+    const creneaux = (sem[j.toLowerCase()] || {}).creneaux || {};
+    ['midi','soir'].forEach(m => {
+      (creneaux[m] || []).forEach(ligne => {
+        if (!ligne.platId) return;
+        const pid = ligne.platId.startsWith('reste:') ? ligne.platId.replace('reste:','') : ligne.platId;
+
+        // Ce repas est un reste consommé
+        if (ligne.platId.startsWith('reste:')) {
+          restesConsommes.add(pid);
+          // Si ce reste consommé a lui-même un reste déclaré, il redevient disponible
+          if (ligne.aReste) restesDecl.add(pid);
+        } else {
+          // Plat normal avec reste déclaré
+          if (ligne.aReste) restesDecl.add(pid);
+        }
+      });
+    });
+  });
+
+  // Disponibles = déclarés MOINS consommés (sauf si re-déclarés)
+  const disponibles = [];
+  restesDecl.forEach(pid => {
+    if (!restesConsommes.has(pid)) {
+      const p = data.plats.find(x=>x.id===pid);
+      if (p) disponibles.push(p);
+    }
+  });
+  return disponibles;
+}
+
+function optsPlat(cle, jourIndex) {
+  const restes = restesDisponibles(cle, jourIndex);
+  let html = '<option value="">— Choisir —</option><optgroup label="🍽️ Plats">';
+  data.plats.forEach(p => { html += `<option value="${p.id}">${p.nom}</option>`; });
+  html += '</optgroup>';
+  if (restes.length) {
+    html += '<optgroup label="♻️ Restes">';
+    restes.forEach(p => { html += `<option value="reste:${p.id}">Reste : ${p.nom}</option>`; });
+    html += '</optgroup>';
+  }
+  return html;
+}
+
+// Génère les options du sélecteur de profil
+function optsProfil(selectedIds=[]) {
+  return '<option value="">— Qui ? —</option>' + data.profils.map(p =>
+    `<option value="${p.id}" ${selectedIds.includes(p.id)?'selected':''}>${p.emoji} ${p.prenom}</option>`
+  ).join('');
+}
+
+function renderPlanning() {
+  if (_ajoutLigneEnCours) return;
+  const lundi = lundiDe(semaineOffset);
+  const fin = new Date(lundi); fin.setDate(fin.getDate()+6);
+  document.getElementById('semaine-label').textContent = `${fmtDate(lundi)} — ${fmtDate(fin)}`;
+  const cle = cleSemaine(lundi);
+  if (!data.planning[cle]) data.planning[cle] = {};
+
+  const joursOrdonnes = getJoursOrdonnes();
+  document.getElementById('grid-planning').innerHTML = joursOrdonnes.map((jour, jourIndex) => {
+    const jKey = jour.toLowerCase();
+    return `<div class="planning-jour">
+      <div class="planning-jour-header">${jour}</div>
+      <div class="planning-creneau" id="creneau-${cle}-${jKey}-midi">
+        <div class="planning-creneau-label">🌞 Midi</div>
+        <div id="lignes-${cle}-${jKey}-midi"></div>
+        <button class="btn-icon add" style="margin-top:5px" onclick="ajouterLigne('${cle}','${jKey}','midi',${jourIndex})"><i class="ti ti-plus"></i></button>
+      </div>
+      <div class="planning-creneau" id="creneau-${cle}-${jKey}-soir">
+        <div class="planning-creneau-label">🌙 Soir</div>
+        <div id="lignes-${cle}-${jKey}-soir"></div>
+        <button class="btn-icon add" style="margin-top:5px" onclick="ajouterLigne('${cle}','${jKey}','soir',${jourIndex})"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Rendre les lignes existantes
+  const sem = data.planning[cle];
+  JOURS.forEach((jour, jourIndex) => {
+    const jKey = jour.toLowerCase();
+    const jd = sem[jKey] || {};
+    const creneaux = jd.creneaux || {};
+    ['midi','soir'].forEach(moment => {
+      const lignes = creneaux[moment] || [];
+      if (lignes.length === 0) {
+        // Afficher une ligne vide par défaut SANS l'ajouter en BDD
+        renderLigne(cle, jKey, moment, jourIndex, { profils:[], platId:'' }, 0);
+      } else {
+        lignes.forEach((ligne, li) => renderLigne(cle, jKey, moment, jourIndex, ligne, li));
+      }
+    });
+  });
+}
+
+function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
+  const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
+  if (!container) return;
+  const profilsSelIds = ligne?.profils || [];
+  const hasSel = profilsSelIds.length > 0;
+
+  // Générer les bulles avec initiales
+  function bullesProfils(ids) {
+    if (!ids.length) return '<span style="font-size:11px;color:var(--text-muted)">— Qui ?</span>';
+    return ids.map(id => {
+      const p = data.profils.find(x=>x.id===id);
+      if (!p) return '';
+      // Découper le nom par & ou , pour gérer les profils multi-personnes
+      const prenoms = p.prenom.split(/[&,]/).map(s=>s.trim()).filter(Boolean);
+      const initiales = prenoms.map(n=>n.substring(0,2)).join(' ');
+      const nbPersonnes = prenoms.length;
+      const largeur = nbPersonnes > 1 ? (nbPersonnes * 18 + 8) + 'px' : '22px';
+      return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:${largeur};height:22px;border-radius:11px;background:${p.couleur};color:white;font-size:10px;font-weight:700;flex-shrink:0;padding:0 4px" title="${p.prenom}">${initiales}</span>`;
+    }).join('');
+  }
+
+  const div = document.createElement('div');
+  div.className = 'planning-ligne';
+  div.id = `ligne-${cle}-${jKey}-${moment}-${li}`;
+
+  // Bouton profil + popup
+  const profilSelDiv = document.createElement('div');
+  profilSelDiv.className = 'planning-profil-sel';
+
+  const btn = document.createElement('button');
+  btn.className = `profil-btn${hasSel?' has-sel':''}`;
+  btn.innerHTML = bullesProfils(profilsSelIds);
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.profil-popup.open').forEach(p => { if(p !== popup) p.classList.remove('open'); });
+    popup.classList.toggle('open');
+  };
+
+  const popup = document.createElement('div');
+  popup.className = 'profil-popup';
+
+  data.profils.forEach(p => {
+    const isSel = profilsSelIds.includes(p.id);
+    const opt = document.createElement('div');
+    opt.className = `profil-badge-opt${isSel?' sel':''}`;
+    opt.style.cssText = isSel
+      ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
+      : `background:var(--surface-1);color:var(--text-secondary)`;
+    opt.innerHTML = `${p.emoji} ${p.prenom}`;
+    opt.dataset.pid = p.id;
+    opt.onclick = async (e) => {
+      e.stopPropagation();
+      const idx = profilsSelIds.indexOf(p.id);
+      if (idx >= 0) profilsSelIds.splice(idx, 1);
+      else profilsSelIds.push(p.id);
+      // Mettre à jour style de l'option
+      const nowSel = profilsSelIds.includes(p.id);
+      opt.className = `profil-badge-opt${nowSel?' sel':''}`;
+      opt.style.cssText = nowSel
+        ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
+        : `background:var(--surface-1);color:var(--text-secondary)`;
+      // Mettre à jour le bouton
+      btn.innerHTML = bullesProfils(profilsSelIds);
+      btn.className = `profil-btn${profilsSelIds.length>0?' has-sel':''}`;
+      // Sauvegarder
+      if (data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) {
+        data.planning[cle][jKey].creneaux[moment][li].profils = [...profilsSelIds];
+        await sauvegarder();
+      }
+    };
+    popup.appendChild(opt);
+  });
+
+  popup.addEventListener('click', e => e.stopPropagation());
+  profilSelDiv.appendChild(btn);
+  profilSelDiv.appendChild(popup);
+
+  // Sélecteur de plat
+  const platSelDiv = document.createElement('div');
+  platSelDiv.className = 'planning-plat-sel';
+  const platSel = document.createElement('select');
+  platSel.innerHTML = optsPlat(cle, jourIndex);
+  platSel.onchange = (e) => majLigne(cle, jKey, moment, li, 'platId', e.target.value);
+  platSelDiv.appendChild(platSel);
+
+  // Bouton 🥗 reste (toggle)
+  const resteBtn = document.createElement('button');
+  const aReste = ligne?.aReste || false;
+  resteBtn.className = 'btn-icon';
+  resteBtn.title = aReste ? 'Reste déclaré - cliquer pour annuler' : 'Déclarer un reste';
+  resteBtn.style.cssText = aReste ? 'color:#1D9E75;border-color:#5DCAA5;background:#E1F5EE' : '';
+  resteBtn.innerHTML = '🥗';
+  resteBtn.onclick = async () => {
+    if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+    _ajoutLigneEnCours = true;
+    const newVal = !data.planning[cle][jKey].creneaux[moment][li].aReste;
+    data.planning[cle][jKey].creneaux[moment][li].aReste = newVal;
+    await sauvegarder();
+    _ajoutLigneEnCours = false;
+    renderPlanning();
+  };
+
+  // Bouton supprimer
+  const btnsDiv = document.createElement('div');
+  btnsDiv.className = 'planning-ligne-btns';
+  btnsDiv.innerHTML = `<button class="btn-icon del" onclick="supprimerLigne('${cle}','${jKey}','${moment}',${li})"><i class="ti ti-trash"></i></button>`;
+
+  div.appendChild(profilSelDiv);
+  div.appendChild(platSelDiv);
+  div.appendChild(resteBtn);
+  div.appendChild(btnsDiv);
+  container.appendChild(div);
+
+  // Sélectionner le plat existant
+  if (ligne?.platId) platSel.value = ligne.platId;
+  // Badge reste
+  if (ligne?.platId?.startsWith('reste:')) {
+    const badge = document.createElement('span');
+    badge.className = 'reste-badge'; badge.textContent = 'Reste';
+    platSelDiv.appendChild(badge);
+  }
+}
+
+// Fermer les popups au clic ailleurs (pas si clic dans un popup ou sur un bouton profil)
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.planning-profil-sel')) {
+    document.querySelectorAll('.profil-popup.open').forEach(p => p.classList.remove('open'));
+  }
+});
+
+window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
+  _ajoutLigneEnCours = true;
+  if (!data.planning[cle]) data.planning[cle] = {};
+  if (!data.planning[cle][jKey]) data.planning[cle][jKey] = {};
+  if (!data.planning[cle][jKey].creneaux) data.planning[cle][jKey].creneaux = {};
+  if (!data.planning[cle][jKey].creneaux[moment]) data.planning[cle][jKey].creneaux[moment] = [];
+  const nouvelleLigne = { profils:[], platId:'' };
+  data.planning[cle][jKey].creneaux[moment].push(nouvelleLigne);
+  await sauvegarder();
+  _ajoutLigneEnCours = false;
+  const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
+  if (container) {
+    const li = data.planning[cle][jKey].creneaux[moment].length - 1;
+    renderLigne(cle, jKey, moment, jourIndex, nouvelleLigne, li);
+  }
+};
+
+window.toggleReste = async (cle, jKey, moment, li, btn) => {
+  if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+  const newVal = !data.planning[cle][jKey].creneaux[moment][li].aReste;
+  data.planning[cle][jKey].creneaux[moment][li].aReste = newVal;
+  await sauvegarder();
+  renderPlanning();
+};
+
+window.majLigne = async (cle, jKey, moment, li, champ, valeur) => {
+  if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+  if (champ === 'profils') {
+    // valeur est l'élément select multiple
+    data.planning[cle][jKey].creneaux[moment][li].profils = [...valeur.selectedOptions].map(o=>o.value);
+  } else {
+    data.planning[cle][jKey].creneaux[moment][li][champ] = valeur;
+    // Mettre à jour le badge reste
+    const div = document.getElementById(`ligne-${cle}-${jKey}-${moment}-${li}`);
+    if (div) {
+      const badge = div.querySelector('.reste-badge');
+      if (valeur.startsWith('reste:')) {
+        if (!badge) { const b=document.createElement('span'); b.className='reste-badge'; b.textContent='Reste'; div.querySelector('.planning-plat-sel').appendChild(b); }
+      } else { if (badge) badge.remove(); }
+    }
+  }
+  await sauvegarder();
+};
+
+window.supprimerLigne = async (cle, jKey, moment, li) => {
+  if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]) return;
+  data.planning[cle][jKey].creneaux[moment].splice(li, 1);
+  await sauvegarder();
+  renderPlanning();
+};
+
+// ===================== COURSES =====================
+window.genererCourses = async () => {
+  const lundi = lundiDe(semaineOffset);
+  const cle = cleSemaine(lundi);
+  const sem = data.planning[cle] || {};
+
+  // Collecter tous les plats planifiés (hors restes)
+  const platsPlanifies = [];
+  const restesUtilises = [];
+  JOURS.forEach(j => {
+    ['midi','soir'].forEach(m => {
+      (creneaux[m] || []).forEach(ligne => {
+        if (!ligne.platId) return;
+        if (ligne.platId.startsWith('reste:')) {
+          const pid = ligne.platId.replace('reste:','');
+          const p = data.plats.find(x=>x.id===pid);
+          if (p) restesUtilises.push(p.nom);
+        } else {
+          const p = data.plats.find(x=>x.id===ligne.platId);
+          if (p) platsPlanifies.push(p);
+        }
+      });
+    });
+  });
+
+  if (!platsPlanifies.length && !restesUtilises.length) { alert('Aucun repas planifié cette semaine !'); return; }
+
+  showSection('courses', document.querySelectorAll('.nav-item')[2]);
+  document.getElementById('courses-content').innerHTML = '<div class="empty"><span class="loading-dots">Génération en cours</span></div>';
+
+  const prompt = `Tu es un assistant culinaire.
+Plats à cuisiner cette semaine: ${platsPlanifies.map(p=>`${p.nom} (ingrédients: ${(p.ingredients||[]).join(', ')})`).join(' / ')}
+Plats en restes (déjà cuisinés, PAS à racheter): ${restesUtilises.join(', ') || 'aucun'}
+Profils famille: ${JSON.stringify(data.profils.map(p=>({prenom:p.prenom,allergies:p.allergies})))}
+Génère une liste de courses UNIQUEMENT en JSON valide, sans texte avant ni après, sans markdown.
+Format: {"Fruits et légumes":["Tomates x4"],"Viandes et poissons":["Poulet 1kg"],"Épicerie":["Thon x2"],"Produits frais":["Œufs x6"],"Autres":[]}
+IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumule les quantités, respecte les allergies.`;
+
+  try {
+    const proxyUrl1 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
+    const r = await fetch(proxyUrl1, {redirect:'follow', credentials:'omit'});
+    const d = await r.json();
+    if (d.quota_depasse) {
+      document.getElementById('courses-content').innerHTML = '<div class="empty">⏳ Quota IA atteint pour aujourd\'hui.<br>Réessaie dans quelques heures.</div>';
+      return;
+    }
+    if (d.error) {
+      document.getElementById('courses-content').innerHTML = '<div class="empty">❌ Erreur IA. Réessaie.</div>';
+      return;
+    }
+    const txt = d.content.map(c=>c.text||'').join('');
+    const courses = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    data.liste_courses = { generee_le: new Date().toISOString().slice(0,10), rayons:{} };
+    Object.keys(courses).forEach(rayon => { if(courses[rayon].length) data.liste_courses.rayons[rayon] = courses[rayon].map(a=>({article:a,coche:false})); });
+    await sauvegarder();
+    renderCourses();
+  } catch(e) {
+    document.getElementById('courses-content').innerHTML = '<div class="empty">❌ Erreur lors de la génération. Réessaie.</div>';
+  }
+};
+
+window.cocherArticle = async (rayon, i, v) => {
+  data.liste_courses.rayons[rayon][i].coche = v;
+  const el = document.getElementById(`ci-${rayon.replace(/\s/g,'_')}-${i}`);
+  if (el) v ? el.classList.add('done') : el.classList.remove('done');
+  await sauvegarder();
+};
+
+window.effacerCourses = async () => {
+  if (!confirm('Effacer toute la liste de courses ?')) return;
+  data.liste_courses = {};
+  await sauvegarder();
+  renderCourses();
+};
+
+window.reinitCourses = async () => {
+  if (!data.liste_courses?.rayons) return;
+  Object.keys(data.liste_courses.rayons).forEach(r => data.liste_courses.rayons[r].forEach(i=>i.coche=false));
+  await sauvegarder(); renderCourses();
+};
+
+function renderCourses() {
+  const el = document.getElementById('courses-content');
+  const r = data.liste_courses?.rayons;
+  if (!r || !Object.keys(r).length) { el.innerHTML = '<div class="empty">Aucune liste générée.</div>'; return; }
+  const icons = {'Fruits et légumes':'ti-plant-2','Viandes et poissons':'ti-fish','Épicerie':'ti-basket','Produits frais':'ti-egg','Autres':'ti-dots'};
+  let html = `<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Générée le ${data.liste_courses.generee_le||'—'}</p>`;
+  Object.keys(r).forEach(rayon => {
+    if (!r[rayon].length) return;
+    html += `<div class="rayon-titre"><i class="ti ${icons[rayon]||'ti-shopping-cart'}"></i>${rayon}</div>`;
+    r[rayon].forEach((item,i) => {
+      html += `<div class="checklist-item${item.coche?' done':''}" id="ci-${rayon.replace(/\s/g,'_')}-${i}">
+        <input type="checkbox" ${item.coche?'checked':''} onchange="cocherArticle('${rayon}',${i},this.checked)">
+        <span>${item.article}</span>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+// ===================== IA =====================
+function renderIAProfils() {
+  const el = document.getElementById('ia-profils-sel');
+  if (!el) return;
+  el.innerHTML = data.profils.map(p => `
+    <label style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:13px;margin:0">
+      <input type="checkbox" value="${p.id}" style="accent-color:${p.couleur};width:16px;height:16px">
+      <span style="background:${p.couleur}20;color:${p.couleur};padding:2px 8px;border-radius:20px;font-weight:500">${p.emoji} ${p.prenom}</span>
+    </label>`).join('');
+}
+
+window.demanderIA = async () => {
+  const profilsIds = [...document.querySelectorAll('#ia-profils-sel input:checked')].map(cb=>cb.value);
+  const profilsConcernes = data.profils.filter(p=>profilsIds.includes(p.id));
+  const zone = document.getElementById('ia-zone');
+  const rep = document.getElementById('ia-reponse');
+  zone.style.display = 'block';
+  rep.innerHTML = '<span class="loading-dots">L\'IA réfléchit</span>';
+  document.getElementById('ia-actions').style.display = 'none';
+  document.getElementById('ia-actions').innerHTML = '';
+  const types = {
+    suggestion:"Propose 4 idées de plats en t'inspirant des habitudes culinaires de cette famille.",
+    declinaison:"Propose 3 déclinaisons originales de plats déjà dans leur bibliothèque.",
+    croisement:"Propose 2 croisements créatifs entre leurs plats existants.",
+    nouveau:"Propose 3 plats qu'ils n'ont jamais faits mais qui correspondent à leur style."
+  };
+  const prompt = `Tu es un assistant culinaire personnel.
+Profils concernés: ${JSON.stringify(profilsConcernes.map(p=>({prenom:p.prenom,preferences:p.preferences,allergies:p.allergies})))}
+Bibliothèque de plats: ${JSON.stringify(data.plats.map(p=>({nom:p.nom,temps:p.temps,ingredients:p.ingredients})))}
+Contrainte temps: ${document.getElementById('ia-temps').value}
+Envie: ${document.getElementById('ia-envie').value||'aucune'}
+Mission: ${types[document.getElementById('ia-type').value]}
+IMPORTANT: Réponds UNIQUEMENT avec un tableau JSON valide, sans texte avant ni après, sans balises markdown.
+Format exact: [{"nom":"Nom du plat","temps":"rapide","ingredients":["ingr1","ingr2"],"description":"Description appétissante en 1-2 phrases."}]
+Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les préférences et allergies.`;
+  try {
+    const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1500';
+    const r = await fetch(proxyUrl2, {redirect:'follow', credentials:'omit'});
+    const d = await r.json();
+    if (d.quota_depasse) { rep.textContent = '⏳ Quota IA atteint pour aujourd\'hui. Réessaie dans quelques heures.'; return; }
+    if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
+    const txt = d.content.map(c=>c.text||'').join('');
+    let plats = [];
+    try { plats = JSON.parse(txt.replace(/```json|```/g,'').trim()); } catch(e) { rep.textContent = txt; return; }
+    // Affichage lisible
+    rep.textContent = plats.map((p,i) => `${i+1}. ${p.nom} (${p.temps})\n   ${p.description}`).join('\n\n');
+    // Cartes avec bouton individuel
+    const cartesHtml = plats.map(p => {
+      const ingrStr = (p.ingredients||[]).join(', ');
+      const idx = plats.indexOf(p);
+      // Stocker les données dans un objet global pour éviter les problèmes d'apostrophes dans onclick
+      window._platsIA = window._platsIA || {};
+      window._platsIA[idx] = {nom:p.nom, temps:p.temps, ingredients:ingrStr, description:p.description||'', profils:profilsIds};
+      return `<div style="background:var(--surface-1);border:1px solid var(--border);border-radius:8px;margin-top:6px;padding:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${p.nom} <span style="font-size:11px;color:var(--text-muted);font-weight:400">(${p.temps})</span></div>
+            ${ingrStr ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">${ingrStr}</div>` : ''}
+            ${p.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:4px;font-style:italic">${p.description}</div>` : ''}
+          </div>
+          <button data-idx="${idx}" onclick="ajouterPlatIAIdx(this.dataset.idx)" style="padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit"><i class="ti ti-plus"></i> Ajouter</button>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('ia-actions').innerHTML = cartesHtml;
+    document.getElementById('ia-actions').style.display = 'flex';
+    document.getElementById('ia-actions').style.flexDirection = 'column';
+  } catch(e) { rep.textContent = '❌ Erreur de connexion. Réessaie.'; }
+};
+
+window.ajouterDepuisIA = async () => {
+  const nom = prompt('Nom du plat à ajouter dans "Plats découverts" :');
+  if (!nom) return;
+  data.plats.push({id:'p_'+Date.now(),nom:nom.trim(),temps:'normal',moment:'tous',ingredients:[],notes:'Suggéré par l\'IA',categorie:'plats_decouverts',profils:[]});
+  await sauvegarder();
+  alert(`"${nom}" ajouté à tes plats découverts !`);
+};
+
+window.ajouterPlatIAIdx = async (idx) => {
+  const p = window._platsIA && window._platsIA[idx];
+  if (!p) return;
+  await ajouterPlatIA(p.nom, p.temps, p.ingredients, p.description, p.profils);
+  const btn = document.querySelector(`[data-idx="${idx}"]`);
+  if (btn) { btn.textContent = '✓ Ajouté'; btn.disabled = true; btn.style.background = '#E1F5EE'; btn.style.color = 'var(--green-dark)'; }
+};
+
+window.ajouterPlatIA = async (nom, temps, ingredients, description, profils) => {
+  if (data.plats.find(p=>p.nom.toLowerCase()===nom.toLowerCase())) {
+    alert(`"${nom}" est déjà dans ta bibliothèque !`);
+    return;
+  }
+  data.plats.push({
+    id:'p_'+Date.now(),
+    nom:nom.trim(),
+    temps:temps||'normal',
+    moment:'tous',
+    ingredients: ingredients ? ingredients.split(',').map(x=>x.trim()).filter(Boolean) : [],
+    notes: description || 'Suggéré par l\'IA',
+    categorie:'plats_decouverts',
+    profils: Array.isArray(profils) ? profils : []
+  });
+  await sauvegarder();
+  const btns = document.querySelectorAll(`[data-platnom="${CSS.escape(nom)}"]`);
+  btns.forEach(b => { b.textContent = '✓ Ajouté'; b.disabled = true; b.style.background = '#E1F5EE'; b.style.color = 'var(--green-dark)'; });
+};
+
+// ===================== MODALS =====================
+window.fermerModal = (id) => document.getElementById(id).style.display = 'none';
+window.fermerModalSiOverlay = (e, id) => { if(e.target===document.getElementById(id)) fermerModal(id); };
+window.selColor = (el) => {
+  document.querySelectorAll('.color-option[data-color]').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected'); colorSelectionnee = el.dataset.color;
+};
+window.selEmoji = (el) => {
+  document.querySelectorAll('#emoji-picker span').forEach(e => e.style.borderColor = 'transparent');
+  el.style.borderColor = '#1a1a1a'; emojiSelectionne = el.dataset.emoji;
 };
 </script>
 </body>
