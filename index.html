@@ -707,49 +707,58 @@ function cleSemaine(d) { return d.toISOString().slice(0,10); }
 
 window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
 
-// Correction et fiabilisation de la gestion chronologique des restes
-function restesDisponibles(cle, jourIndex) {
+// Récupère les plats déjà cuisinés (avec reste déclaré) et non encore consommés en amont
+function restesDisponibles(cle, targetJKey, targetMoment, targetLi) {
   const sem = data.planning[cle] || {};
-  const joursOrd = getJoursOrdonnes();
+  const joursOrd = getJoursOrdonnes().map(j => j.toLowerCase());
   
-  const restesDecl = new Map();
+  const restesDecl = new Set();
   const restesConsommes = new Set();
 
-  // On scanne uniquement les jours précédents de la semaine courante
-  joursOrd.slice(0, jourIndex).forEach(j => {
-    const creneaux = (sem[j.toLowerCase()] || {}).creneaux || {};
-    ['midi','soir'].forEach(m => {
-      (creneaux[m] || []).forEach(ligne => {
-        if (!ligne.platId) return;
+  // Parcours chronologique de la semaine jusqu'à la ligne actuelle
+  for (const jKey of joursOrd) {
+    for (const moment of ['midi', 'soir']) {
+      const lignes = sem[jKey]?.creneaux?.[moment] || [];
+      for (let li = 0; li < lignes.length; li++) {
+        // Si on atteint la ligne en cours d'évaluation, on s'arrête
+        if (jKey === targetJKey && moment === targetMoment && li === targetLi) {
+          break;
+        }
         
-        const purePlatId = ligne.platId.startsWith('reste:') ? ligne.platId.replace('reste:','') : ligne.platId;
+        const ligne = lignes[li];
+        if (!ligne.platId) continue;
+        const pid = ligne.platId.startsWith('reste:') ? ligne.platId.replace('reste:', '') : ligne.platId;
 
         if (ligne.platId.startsWith('reste:')) {
-          restesConsommes.add(purePlatId);
-          if (ligne.aReste) {
-            restesDecl.set(purePlatId, true);
-          }
+          restesConsommes.add(pid);
+          if (ligne.aReste) restesDecl.add(pid); // Si on redéclare un reste sur un reste
         } else {
-          if (ligne.aReste) {
-            restesDecl.set(purePlatId, true);
-          }
+          if (ligne.aReste) restesDecl.add(pid);
         }
-      });
-    });
-  });
+      }
+      if (jKey === targetJKey && moment === targetMoment) break;
+    }
+    if (jKey === targetJKey) break;
+  }
+
+  // Déterminer quel plat est actuellement sélectionné sur CETTE ligne
+  const ligneActuelle = sem[targetJKey]?.creneaux?.[targetMoment]?.[targetLi];
+  const actuelPlatId = ligneActuelle?.platId || '';
+  const actuelPid = actuelPlatId.startsWith('reste:') ? actuelPlatId.replace('reste:', '') : null;
 
   const disponibles = [];
-  restesDecl.forEach((value, pureId) => {
-    if (!restesConsommes.has(pureId) || restesDecl.get(pureId) === true) {
-      const p = data.plats.find(x => x.id === pureId);
+  restesDecl.forEach(pid => {
+    // Le reste est dispo s'il n'a pas été consommé OU s'il s'agit du plat de la ligne actuelle
+    if (!restesConsommes.has(pid) || pid === actuelPid) {
+      const p = data.plats.find(x => x.id === pid);
       if (p) disponibles.push(p);
     }
   });
   return disponibles;
 }
 
-function optsPlat(cle, jourIndex) {
-  const restes = restesDisponibles(cle, jourIndex);
+function optsPlat(cle, jKey, moment, li) {
+  const restes = restesDisponibles(cle, jKey, moment, li);
   let html = '<option value="">— Choisir —</option><optgroup label="🍽️ Plats">';
   data.plats.forEach(p => { html += `<option value="${p.id}">${p.nom}</option>`; });
   html += '</optgroup>';
@@ -761,9 +770,10 @@ function optsPlat(cle, jourIndex) {
   return html;
 }
 
+// Génère les options du sélecteur de profil
 function optsProfil(selectedIds=[]) {
   return '<option value="">— Qui ? —</option>' + data.profils.map(p =>
-    `<option value="${p.id}" ${selectedIds.includes(p.id)?'selected':''}>${p.emoji} ${p.prenom}</option>'`
+    `<option value="${p.id}" ${selectedIds.includes(p.id)?'selected':''}>${p.emoji} ${p.prenom}</option>`
   ).join('');
 }
 
@@ -793,14 +803,16 @@ function renderPlanning() {
     </div>`;
   }).join('');
 
+  // Rendre les lignes existantes
   const sem = data.planning[cle];
-  joursOrdonnes.forEach((jour, jourIndex) => {
+  JOURS.forEach((jour, jourIndex) => {
     const jKey = jour.toLowerCase();
     const jd = sem[jKey] || {};
     const creneaux = jd.creneaux || {};
     ['midi','soir'].forEach(moment => {
       const lignes = creneaux[moment] || [];
       if (lignes.length === 0) {
+        // Afficher une ligne vide par défaut SANS l'ajouter en BDD
         renderLigne(cle, jKey, moment, jourIndex, { profils:[], platId:'' }, 0);
       } else {
         lignes.forEach((ligne, li) => renderLigne(cle, jKey, moment, jourIndex, ligne, li));
@@ -815,11 +827,13 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   const profilsSelIds = ligne?.profils || [];
   const hasSel = profilsSelIds.length > 0;
 
+  // Générer les bulles avec initiales
   function bullesProfils(ids) {
     if (!ids.length) return '<span style="font-size:11px;color:var(--text-muted)">— Qui ?</span>';
     return ids.map(id => {
       const p = data.profils.find(x=>x.id===id);
       if (!p) return '';
+      // Découper le nom par & ou , pour gérer les profils multi-personnes
       const prenoms = p.prenom.split(/[&,]/).map(s=>s.trim()).filter(Boolean);
       const initiales = prenoms.map(n=>n.substring(0,2)).join(' ');
       const nbPersonnes = prenoms.length;
@@ -832,6 +846,7 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   div.className = 'planning-ligne';
   div.id = `ligne-${cle}-${jKey}-${moment}-${li}`;
 
+  // Bouton profil + popup
   const profilSelDiv = document.createElement('div');
   profilSelDiv.className = 'planning-profil-sel';
 
@@ -861,13 +876,16 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
       const idx = profilsSelIds.indexOf(p.id);
       if (idx >= 0) profilsSelIds.splice(idx, 1);
       else profilsSelIds.push(p.id);
+      // Mettre à jour style de l'option
       const nowSel = profilsSelIds.includes(p.id);
       opt.className = `profil-badge-opt${nowSel?' sel':''}`;
       opt.style.cssText = nowSel
         ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
         : `background:var(--surface-1);color:var(--text-secondary)`;
+      // Mettre à jour le bouton
       btn.innerHTML = bullesProfils(profilsSelIds);
       btn.className = `profil-btn${profilsSelIds.length>0?' has-sel':''}`;
+      // Sauvegarder
       if (data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) {
         data.planning[cle][jKey].creneaux[moment][li].profils = [...profilsSelIds];
         await sauvegarder();
@@ -880,16 +898,15 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   profilSelDiv.appendChild(btn);
   profilSelDiv.appendChild(popup);
 
+  // Sélecteur de plat
   const platSelDiv = document.createElement('div');
   platSelDiv.className = 'planning-plat-sel';
   const platSel = document.createElement('select');
-  platSel.innerHTML = optsPlat(cle, jourIndex);
-  platSel.onchange = async (e) => {
-    await majLigne(cle, jKey, moment, li, 'platId', e.target.value);
-    renderPlanning(); 
-  };
+  platSel.innerHTML = optsPlat(cle, jKey, moment, li);
+  platSel.onchange = (e) => majLigne(cle, jKey, moment, li, 'platId', e.target.value);
   platSelDiv.appendChild(platSel);
 
+  // Bouton 🥗 reste (toggle)
   const resteBtn = document.createElement('button');
   const aReste = ligne?.aReste || false;
   resteBtn.className = 'btn-icon';
@@ -906,6 +923,7 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
     renderPlanning();
   };
 
+  // Bouton supprimer
   const btnsDiv = document.createElement('div');
   btnsDiv.className = 'planning-ligne-btns';
   btnsDiv.innerHTML = `<button class="btn-icon del" onclick="supprimerLigne('${cle}','${jKey}','${moment}',${li})"><i class="ti ti-trash"></i></button>`;
@@ -916,7 +934,9 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   div.appendChild(btnsDiv);
   container.appendChild(div);
 
+  // Sélectionner le plat existant
   if (ligne?.platId) platSel.value = ligne.platId;
+  // Badge reste
   if (ligne?.platId?.startsWith('reste:')) {
     const badge = document.createElement('span');
     badge.className = 'reste-badge'; badge.textContent = 'Reste';
@@ -924,6 +944,7 @@ function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
   }
 }
 
+// Fermer les popups au clic ailleurs (pas si clic dans un popup ou sur un bouton profil)
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.planning-profil-sel')) {
     document.querySelectorAll('.profil-popup.open').forEach(p => p.classList.remove('open'));
@@ -940,20 +961,37 @@ window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
   data.planning[cle][jKey].creneaux[moment].push(nouvelleLigne);
   await sauvegarder();
   _ajoutLigneEnCours = false;
+  const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
+  if (container) {
+    const li = data.planning[cle][jKey].creneaux[moment].length - 1;
+    renderLigne(cle, jKey, moment, jourIndex, nouvelleLigne, li);
+  }
+};
+
+window.toggleReste = async (cle, jKey, moment, li, btn) => {
+  if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+  const newVal = !data.planning[cle][jKey].creneaux[moment][li].aReste;
+  data.planning[cle][jKey].creneaux[moment][li].aReste = newVal;
+  await sauvegarder();
   renderPlanning();
 };
 
 window.majLigne = async (cle, jKey, moment, li, champ, valeur) => {
-  if (!data.planning[cle]) data.planning[cle] = {};
-  if (!data.planning[cle][jKey]) data.planning[cle][jKey] = {};
-  if (!data.planning[cle][jKey].creneaux) data.planning[cle][jKey].creneaux = {};
-  if (!data.planning[cle][jKey].creneaux[moment]) data.planning[cle][jKey].creneaux[moment] = [];
-  
-  if (!data.planning[cle][jKey].creneaux[moment][li]) {
-    data.planning[cle][jKey].creneaux[moment][li] = { profils:[], platId:'' };
+  if (!data.planning[cle]?.[jKey]?.creneaux?.[moment]?.[li]) return;
+  if (champ === 'profils') {
+    // valeur est l'élément select multiple
+    data.planning[cle][jKey].creneaux[moment][li].profils = [...valeur.selectedOptions].map(o=>o.value);
+  } else {
+    data.planning[cle][jKey].creneaux[moment][li][champ] = valeur;
+    // Mettre à jour le badge reste
+    const div = document.getElementById(`ligne-${cle}-${jKey}-${moment}-${li}`);
+    if (div) {
+      const badge = div.querySelector('.reste-badge');
+      if (valeur.startsWith('reste:')) {
+        if (!badge) { const b=document.createElement('span'); b.className='reste-badge'; b.textContent='Reste'; div.querySelector('.planning-plat-sel').appendChild(b); }
+      } else { if (badge) badge.remove(); }
+    }
   }
-  
-  data.planning[cle][jKey].creneaux[moment][li][champ] = valeur;
   await sauvegarder();
 };
 
@@ -970,12 +1008,12 @@ window.genererCourses = async () => {
   const cle = cleSemaine(lundi);
   const sem = data.planning[cle] || {};
 
+  // Collecter tous les plats planifiés (hors restes)
   const platsPlanifies = [];
   const restesUtilises = [];
-  const joursOrdonnes = getJoursOrdonnes();
-  
-  joursOrdonnes.forEach(j => {
-    const creneaux = (sem[j.toLowerCase()] || {}).creneaux || {};
+  JOURS.forEach(j => {
+    const jKey = j.toLowerCase();
+    const creneaux = sem[jKey]?.creneaux || {};
     ['midi','soir'].forEach(m => {
       (creneaux[m] || []).forEach(ligne => {
         if (!ligne.platId) return;
@@ -1092,7 +1130,7 @@ window.demanderIA = async () => {
     croisement:"Propose 2 croisements créatifs entre leurs plats existants.",
     nouveau:"Propose 3 plats qu'ils n'ont jamais faits mais qui correspondent à leur style."
   };
-  const prompt = `Tu es un assistant culinaire personnel.
+  const prompt = `Tu es un assistant culinaire personalisé.
 Profils concernés: ${JSON.stringify(profilsConcernes.map(p=>({prenom:p.prenom,preferences:p.preferences,allergies:p.allergies})))}
 Bibliothèque de plats: ${JSON.stringify(data.plats.map(p=>({nom:p.nom,temps:p.temps,ingredients:p.ingredients})))}
 Contrainte temps: ${document.getElementById('ia-temps').value}
@@ -1110,10 +1148,13 @@ Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les p
     const txt = d.content.map(c=>c.text||'').join('');
     let plats = [];
     try { plats = JSON.parse(txt.replace(/```json|```/g,'').trim()); } catch(e) { rep.textContent = txt; return; }
+    // Affichage lisible
     rep.textContent = plats.map((p,i) => `${i+1}. ${p.nom} (${p.temps})\n   ${p.description}`).join('\n\n');
+    // Cartes avec bouton individuel
     const cartesHtml = plats.map(p => {
       const ingrStr = (p.ingredients||[]).join(', ');
       const idx = plats.indexOf(p);
+      // Stocker les données dans un objet global pour éviter les problèmes d'apostrophes dans onclick
       window._platsIA = window._platsIA || {};
       window._platsIA[idx] = {nom:p.nom, temps:p.temps, ingredients:ingrStr, description:p.description||'', profils:profilsIds};
       return `<div style="background:var(--surface-1);border:1px solid var(--border);border-radius:8px;margin-top:6px;padding:10px">
@@ -1165,6 +1206,8 @@ window.ajouterPlatIA = async (nom, temps, ingredients, description, profils) => 
     profils: Array.isArray(profils) ? profils : []
   });
   await sauvegarder();
+  const btns = document.querySelectorAll(`[data-platnom="${CSS.escape(nom)}"]`);
+  btns.forEach(b => { b.textContent = '✓ Ajouté'; b.disabled = true; b.style.background = '#E1F5EE'; b.style.color = 'var(--green-dark)'; });
 };
 
 // ===================== MODALS =====================
