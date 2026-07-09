@@ -457,6 +457,23 @@ function migrerPlanningSiBesoin(planningBrut) {
   return nouveau;
 }
 
+const PROXY_URL = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec';
+
+// Appelle le proxy Apps Script en POST (le prompt part dans le corps de la requête, pas dans l'URL,
+// donc plus aucune limite de taille pratique — contrairement à l'ancien appel en GET).
+// Content-Type volontairement en 'text/plain' : Apps Script Web App ne gère pas le preflight CORS
+// (requête OPTIONS) déclenché automatiquement par le navigateur avec 'application/json'.
+async function appellerProxyIA(prompt, maxTokens) {
+  const r = await fetch(PROXY_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    credentials: 'omit',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ prompt, max_tokens: maxTokens })
+  });
+  return r.json();
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -1040,9 +1057,7 @@ Format: {"Fruits et légumes":["Tomates x4"],"Viandes et poissons":["Poulet 1kg"
 IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumule les quantités, respecte les allergies.`;
 
   try {
-    const proxyUrl1 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
-    const r = await fetch(proxyUrl1, {redirect:'follow', credentials:'omit'});
-    const d = await r.json();
+    const d = await appellerProxyIA(prompt, 1000);
     if (d.quota_depasse) {
       document.getElementById('courses-content').innerHTML = '<div class="empty">⏳ Quota IA atteint pour aujourd\'hui.<br>Réessaie dans quelques heures.</div>';
       return;
@@ -1137,9 +1152,7 @@ IMPORTANT: Réponds UNIQUEMENT avec un tableau JSON valide, sans texte avant ni 
 Format exact: [{"nom":"Nom du plat","temps":"rapide","ingredients":["ingr1","ingr2"],"description":"Description appétissante en 1-2 phrases."}]
 Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les préférences et allergies.`;
   try {
-    const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1500';
-    const r = await fetch(proxyUrl2, {redirect:'follow', credentials:'omit'});
-    const d = await r.json();
+    const d = await appellerProxyIA(prompt, 1500);
     if (d.quota_depasse) { rep.textContent = '⏳ Quota IA atteint pour aujourd\'hui. Réessaie dans quelques heures.'; return; }
     if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
     const txt = d.content.map(c=>c.text||'').join('');
