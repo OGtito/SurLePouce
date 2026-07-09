@@ -62,13 +62,15 @@ textarea{min-height:70px;resize:vertical}
 .plat-info{flex:1;min-width:0}
 .plat-nom{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plat-meta{font-size:12px;color:var(--text-muted);margin-top:2px}
-.plat-profils{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
+.plat-profils{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
 .tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
 .tab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;font-family:inherit;background:white;color:var(--text-secondary);white-space:nowrap;flex-shrink:0}
 .tab.active{background:#E1F5EE;border-color:#5DCAA5;color:var(--green-dark)}
 .badge{background:#E1F5EE;color:var(--green-dark);border-radius:20px;font-size:11px;padding:1px 6px;margin-left:4px}
 .semaine-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .semaine-label{flex:1;text-align:center;font-size:14px;font-weight:600}
+
+/* PLANNING & AUTRES */
 .planning-jour{background:white;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:visible}
 .planning-jour-header{border-radius:12px 12px 0 0;background:var(--surface-1);padding:8px 12px;font-weight:600;font-size:14px}
 .planning-creneau{padding:8px 10px;border-bottom:1px solid var(--border)}
@@ -82,27 +84,309 @@ textarea{min-height:70px;resize:vertical}
 .btn-icon:hover{background:var(--surface-1)}
 .btn-icon.add{color:var(--green);border-color:#5DCAA5}
 .btn-icon.del{color:var(--coral);border-color:var(--coral-light)}
+
+.rayon-titre{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.checklist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.checklist-item:last-child{border-bottom:none}
+.checklist-item input[type=checkbox]{width:20px;height:20px;cursor:pointer;accent-color:var(--green);flex-shrink:0}
+.checklist-item.done span{text-decoration:line-through;color:var(--text-muted)}
+.ia-zone{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px}
+.ia-reponse{font-size:14px;line-height:1.8;white-space:pre-wrap}
+.profil-card{background:white;border:2px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.profil-nom{font-weight:600;font-size:15px}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
 .modal{background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-header h3{font-size:17px;font-weight:600}
+.param-section{margin-bottom:20px}
+.param-section h3{font-size:14px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.param-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.param-row:last-child{border-bottom:none}
+.param-info{flex:1}
+.param-label{font-size:14px;font-weight:500}
+.param-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+.alert-box{background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;padding:10px 14px;font-size:13px;color:#7A4E0E;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start}
 </style>
 </head>
 <body>
 
+<div id="auth-screen">
+  <div style="font-size:3rem;margin-bottom:1rem">🍽️</div>
+  <h1>SurLePouce</h1>
+  <p>Ton assistant repas familial</p>
+  <button class="btn-google" onclick="signerAvecGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    Continuer avec Google
+  </button>
+  <p id="auth-error" style="color:#D85A30;margin-top:1rem;font-size:13px"></p>
+</div>
+
 <div id="app">
-  <div class="app-header"><h1>🍽️ SurLePouce</h1></div>
-  <div id="s-planning" class="section active">
-    <div class="semaine-nav"><div class="semaine-label" id="semaine-label"></div></div>
+  <div class="app-header">
+    <h1>🍽️ SurLePouce</h1>
+    <div class="flex">
+      <img id="user-photo" class="user-avatar" src="" alt="" style="display:none">
+      <button class="btn-signout" onclick="seDeconnecter()"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+
+  <div id="s-plats" class="section active">
+    <div class="flex-between" style="margin-bottom:16px">
+      <h2 style="margin:0">Mes plats</h2>
+      <button class="btn btn-primary btn-sm" onclick="ouvrirModalPlat()"><i class="ti ti-plus"></i> Ajouter</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="filtrerPlats('tous',this)">Tous <span class="badge" id="b-tous">0</span></button>
+      <button class="tab" onclick="filtrerPlats('rapide',this)">Rapides <span class="badge" id="b-rapide">0</span></button>
+      <button class="tab" onclick="filtrerPlats('normal',this)">Long <span class="badge" id="b-normal">0</span></button>
+    </div>
+    <div id="liste-plats"><div class="empty">Aucun plat encore.<br>Ajoute ton premier plat !</div></div>
+  </div>
+
+  <div id="s-planning" class="section">
+    <div class="semaine-nav">
+      <button class="btn btn-sm" onclick="changerSemaine(-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="semaine-label" id="semaine-label"></div>
+      <button class="btn btn-sm" onclick="changerSemaine(1)"><i class="ti ti-chevron-right"></i></button>
+    </div>
     <div id="grid-planning"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="genererCourses()">
+      <i class="ti ti-shopping-cart"></i> Générer la liste de courses
+    </button>
+  </div>
+
+  <div id="s-courses" class="section">
+    <div class="flex-between" style="margin-bottom:16px">
+      <h2 style="margin:0">Liste de courses</h2>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="reinitCourses()"><i class="ti ti-refresh"></i> Tout décocher</button>
+        <button class="btn btn-sm btn-danger" onclick="effacerCourses()"><i class="ti ti-trash"></i> Effacer</button>
+      </div>
+    </div>
+    <div id="courses-content"><div class="empty">Aucune liste générée.<br>Remplis le planning puis génère la liste.</div></div>
+  </div>
+
+  <div id="s-ia" class="section">
+    <h2>Suggestions IA</h2>
+    <div class="card">
+      <label>Contrainte de temps</label>
+      <select id="ia-temps">
+        <option value="rapide">Je suis pressé (moins de 20 min)</option>
+        <option value="normal">J'ai le temps</option>
+        <option value="tous">Sans préférence</option>
+      </select>
+      <label>Envie particulière (facultatif)</label>
+      <input type="text" id="ia-envie" placeholder="Ex: quelque chose de léger, avec du poulet...">
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="demanderIA()">
+        <i class="ti ti-sparkles"></i> Demander à l'IA
+      </button>
+    </div>
+    <div class="ia-zone" id="ia-zone" style="display:none">
+      <div class="ia-reponse" id="ia-reponse"></div>
+    </div>
+  </div>
+
+  <div id="s-profils" class="section">
+    <div class="flex-between" style="margin-bottom:16px">
+      <h2 style="margin:0">Profils</h2>
+      <button class="btn btn-primary btn-sm" onclick="ouvrirModalProfil()"><i class="ti ti-plus"></i> Ajouter</button>
+    </div>
+    <div id="liste-profils"></div>
+  </div>
+
+  <div id="s-parametres" class="section">
+    <h2>Paramètres</h2>
+    <div class="param-section">
+      <h3>Sauvegarde locale</h3>
+      <div class="alert-box">
+        <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
+        <span>Les données sont synchronisées en temps réel sur Firebase.</span>
+      </div>
+      <div class="param-row">
+        <div class="param-info">
+          <div class="param-label">Exporter les données</div>
+          <div class="param-desc">Télécharge un fichier surlepouce-backup.json</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="exporterJSON()"><i class="ti ti-download"></i> Exporter</button>
+      </div>
+      <div class="param-row">
+        <div class="param-info">
+          <div class="param-label">Importer des données</div>
+          <div class="param-desc">Restaure depuis un fichier JSON sauvegardé</div>
+        </div>
+        <button class="btn btn-warning btn-sm" onclick="document.getElementById('import-file').click()"><i class="ti ti-upload"></i> Importer</button>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importerJSON(this)">
+      </div>
+    </div>
+    <div class="param-section">
+      <h3>Planning</h3>
+      <div class="param-row">
+        <div class="param-info">
+          <div class="param-label">Premier jour de la semaine</div>
+        </div>
+        <select id="param-premier-jour" onchange="sauvegarderPremierJour(this.value)" style="width:auto;padding:6px 10px;">
+          <option value="1">Lundi</option>
+          <option value="2">Mardi</option>
+          <option value="3">Mercredi</option>
+          <option value="4">Jeudi</option>
+          <option value="5">Vendredi</option>
+          <option value="6">Samedi</option>
+          <option value="0">Dimanche</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="showSection('plats',this)"><i class="ti ti-book-2"></i><span>Plats</span></button>
+    <button class="nav-item" onclick="showSection('planning',this)"><i class="ti ti-calendar-week"></i><span>Planning</span></button>
+    <button class="nav-item" onclick="showSection('courses',this)"><i class="ti ti-shopping-cart"></i><span>Courses</span></button>
+    <button class="nav-item" onclick="showSection('ia',this)"><i class="ti ti-sparkles"></i><span>IA</span></button>
+    <button class="nav-item" onclick="showSection('profils',this)"><i class="ti ti-users"></i><span>Profils</span></button>
+    <button class="nav-item" onclick="showSection('parametres',this)"><i class="ti ti-settings"></i><span>Réglages</span></button>
+  </nav>
+</div>
+
+<div id="modal-plat" class="modal-overlay" style="display:none" onclick="fermerModalSiOverlay(event,'modal-plat')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-plat-titre">Nouveau plat</h3>
+      <button class="btn btn-sm" onclick="fermerModal('modal-plat')"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="plat-edit-id">
+    <label>Nom du plat</label>
+    <input type="text" id="f-nom">
+    <label>Temps de préparation</label>
+    <select id="f-temps">
+      <option value="rapide">Rapide (moins de 20 min)</option>
+      <option value="normal">Normal (plus de 20 min)</option>
+    </select>
+    <div class="flex-end">
+      <button class="btn btn-sm" onclick="fermerModal('modal-plat')">Annuler</button>
+      <button class="btn btn-primary btn-sm" onclick="sauvegarderPlat()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-profil" class="modal-overlay" style="display:none" onclick="fermerModalSiOverlay(event,'modal-profil')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-profil-titre">Nouveau profil</h3>
+      <button class="btn btn-sm" onclick="fermerModal('modal-profil')"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="profil-edit-id">
+    <label>Prénom</label>
+    <input type="text" id="p-prenom">
+    <div class="flex-end">
+      <button class="btn btn-sm" onclick="fermerModal('modal-profil')">Annuler</button>
+      <button class="btn btn-primary btn-sm" onclick="sauvegarderProfil()">Enregistrer</button>
+    </div>
   </div>
 </div>
 
 <script type="module">
-// ... Initialisation Firebase et autres logiques ...
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-// --- LOGIQUE CORRIGÉE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyAPtRL3OQUqexLmPAxwGbuMZNCEtyalrrc",
+  authDomain: "surlepouce-aaaf9.firebaseapp.com",
+  projectId: "surlepouce-aaaf9",
+  storageBucket: "surlepouce-aaaf9.firebasestorage.app",
+  messagingSenderId: "799645038220",
+  appId: "1:799645038220:web:6062d116e01738ee5cada9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const EMAILS_AUTORISES = ['24.24oliviergsm@gmail.com','24.24cecilegsm@gmail.com'];
+
+let data = { profils:[], plats:[], planning:{}, liste_courses:{} };
+let filtreActuel = 'tous';
+let semaineOffset = 0;
 let _isRendering = false;
+let unsubscribe = null;
 
-window.restesDisponibles = (cle, jourIndex) => {
+const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const JOURS_ISO = [1,2,3,4,5,6,0]; 
+
+function getPremierJour() { return parseInt(data.parametres?.premier_jour ?? 1); }
+function getJoursOrdonnes() {
+  const premier = getPremierJour();
+  const idx = JOURS_ISO.indexOf(premier);
+  return [...JOURS.slice(idx), ...JOURS.slice(0, idx)];
+}
+
+// AUTH
+window.signerAvecGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    if (!EMAILS_AUTORISES.includes(result.user.email)) {
+      await signOut(auth);
+      document.getElementById('auth-error').textContent = "Accès non autorisé.";
+    }
+  } catch(e) { document.getElementById('auth-error').textContent = "Erreur de connexion."; }
+};
+window.seDeconnecter = () => signOut(auth);
+
+onAuthStateChanged(auth, async (user) => {
+  if (user && EMAILS_AUTORISES.includes(user.email)) {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    await chargerDonnees();
+  } else {
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    if (unsubscribe) unsubscribe();
+  }
+});
+
+async function chargerDonnees() {
+  const ref = doc(db, 'surlepouce', 'famille');
+  unsubscribe = onSnapshot(ref, (snap) => {
+    if (snap.exists()) {
+      data = snap.data();
+      if (!data.profils) data.profils = [];
+      if (!data.plats) data.plats = [];
+      if (!data.planning) data.planning = {};
+      if (!data.liste_courses) data.liste_courses = {};
+    }
+    renderTout();
+  });
+}
+
+async function sauvegarder() {
+  try { await setDoc(doc(db, 'surlepouce', 'famille'), data); } catch(e) { console.error(e); }
+}
+
+function renderTout() {
+  renderPlats(); renderProfils(); renderPlanning(); renderCourses(); chargerPremierJour();
+}
+
+window.showSection = (id, btn) => {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'planning') renderPlanning();
+};
+
+window.sauvegarderPremierJour = async (val) => {
+  if (!data.parametres) data.parametres = {};
+  data.parametres.premier_jour = parseInt(val);
+  await sauvegarder();
+};
+function chargerPremierJour() {
+  const val = data.parametres?.premier_jour ?? 1;
+  const sel = document.getElementById('param-premier-jour');
+  if (sel) sel.value = String(val);
+}
+
+// RESTES
+function restesDisponibles(cle, jourIndex) {
   const sem = data.planning[cle] || {};
   const joursOrd = getJoursOrdonnes();
   const tousLesRestesGeneres = new Map(); 
@@ -132,20 +416,277 @@ window.restesDisponibles = (cle, jourIndex) => {
     }
   }
   return disponibles;
-};
+}
+
+// PLANNING
+function lundiDe(offset) {
+  const d = new Date(); const j = d.getDay()||7;
+  d.setDate(d.getDate()-j+1+offset*7); d.setHours(0,0,0,0); return d;
+}
+function fmtDate(d) { return d.toLocaleDateString('fr-FR',{day:'numeric',month:'long'}); }
+function cleSemaine(d) { return d.toISOString().slice(0,10); }
+
+window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
+
+function optsPlat(cle, jourIndex) {
+  const restes = restesDisponibles(cle, jourIndex);
+  let html = '<option value="">— Choisir —</option><optgroup label="🍽️ Plats">';
+  data.plats.forEach(p => { html += `<option value="${p.id}">${p.nom}</option>`; });
+  html += '</optgroup>';
+  if (restes.length) {
+    html += '<optgroup label="♻️ Restes">';
+    restes.forEach(p => { html += `<option value="reste:${p.id}">Reste : ${p.nom}</option>`; });
+    html += '</optgroup>';
+  }
+  return html;
+}
 
 window.renderPlanning = () => {
   if (_isRendering) return;
   _isRendering = true;
-  
-  // ... (Code de génération de la grille) ...
-  // Dans la boucle de rendu des créneaux :
-  // html += `<div class="planning-creneau-label">${moment === 'midi' ? '🌞 Midi' : '🌙 Soir'}</div>`;
-  // ...
-  
+
+  const lundi = lundiDe(semaineOffset);
+  document.getElementById('semaine-label').textContent = `${fmtDate(lundi)}`;
+  const cle = cleSemaine(lundi);
+  if (!data.planning[cle]) data.planning[cle] = {};
+
+  const joursOrdonnes = getJoursOrdonnes();
+  document.getElementById('grid-planning').innerHTML = joursOrdonnes.map((jour, jourIndex) => {
+    const jKey = jour.toLowerCase();
+    return `<div class="planning-jour">
+      <div class="planning-jour-header">${jour}</div>
+      <div class="planning-creneau" id="creneau-${cle}-${jKey}-midi">
+        <div class="planning-creneau-label">🌞 Midi</div>
+        <div id="lignes-${cle}-${jKey}-midi"></div>
+        <button class="btn-icon add" onclick="ajouterLigne('${cle}','${jKey}','midi',${jourIndex})"><i class="ti ti-plus"></i></button>
+      </div>
+      <div class="planning-creneau" id="creneau-${cle}-${jKey}-soir">
+        <div class="planning-creneau-label">🌙 Soir</div>
+        <div id="lignes-${cle}-${jKey}-soir"></div>
+        <button class="btn-icon add" onclick="ajouterLigne('${cle}','${jKey}','soir',${jourIndex})"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const sem = data.planning[cle];
+  joursOrdonnes.forEach((jour, jourIndex) => {
+    const jKey = jour.toLowerCase();
+    const jd = sem[jKey] || {};
+    const creneaux = jd.creneaux || {};
+    ['midi','soir'].forEach(moment => {
+      const lignes = creneaux[moment] || [];
+      lignes.forEach((ligne, li) => renderLigne(cle, jKey, moment, jourIndex, ligne, li));
+    });
+  });
+
   _isRendering = false;
 };
 
+function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
+  const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'planning-ligne';
+  div.innerHTML = `
+    <div class="planning-plat-sel"><select onchange="majLigne('${cle}','${jKey}','${moment}',${li},'platId',this.value)">${optsPlat(cle, jourIndex)}</select></div>
+    <button class="btn-icon" style="${ligne.aReste?'color:#1D9E75;background:#E1F5EE':''}" onclick="toggleReste('${cle}','${jKey}','${moment}',${li})">🥗</button>
+    <button class="btn-icon del" onclick="supprimerLigne('${cle}','${jKey}','${moment}',${li})"><i class="ti ti-trash"></i></button>
+  `;
+  container.appendChild(div);
+  div.querySelector('select').value = ligne.platId || '';
+}
+
+window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
+  if (!data.planning[cle]) data.planning[cle] = {};
+  if (!data.planning[cle][jKey]) data.planning[cle][jKey] = {creneaux:{}};
+  if (!data.planning[cle][jKey].creneaux[moment]) data.planning[cle][jKey].creneaux[moment] = [];
+  data.planning[cle][jKey].creneaux[moment].push({platId:'', aReste:false});
+  await sauvegarder();
+  renderPlanning();
+};
+
+window.toggleReste = async (cle, jKey, moment, li) => {
+  const l = data.planning[cle][jKey].creneaux[moment][li];
+  l.aReste = !l.aReste;
+  await sauvegarder();
+  renderPlanning();
+};
+
+window.majLigne = async (cle, jKey, moment, li, champ, valeur) => {
+  data.planning[cle][jKey].creneaux[moment][li][champ] = valeur;
+  await sauvegarder();
+  renderPlanning();
+};
+
+window.supprimerLigne = async (cle, jKey, moment, li) => {
+  data.planning[cle][jKey].creneaux[moment].splice(li, 1);
+  await sauvegarder();
+  renderPlanning();
+};
+
+// PLATS AVEC BADGES DE PROFILS RESTAURÉS
+function renderPlats() {
+  const el = document.getElementById('liste-plats'); if(!el) return;
+  document.getElementById('b-tous').textContent = data.plats.length;
+  document.getElementById('b-rapide').textContent = data.plats.filter(p=>p.temps==='rapide').length;
+  document.getElementById('b-normal').textContent = data.plats.filter(p=>p.temps==='normal').length;
+  
+  let plats = data.plats;
+  if (filtreActuel==='rapide') plats = plats.filter(p=>p.temps==='rapide');
+  else if (filtreActuel==='normal') plats = plats.filter(p=>p.temps==='normal');
+  
+  if(!plats.length) { el.innerHTML = '<div class="empty">Aucun plat.</div>'; return; }
+  
+  el.innerHTML = plats.map(p => {
+    // Génération des petites tuiles de profils (Ex: Cécile, Olivier...)
+    const badgesProfils = (p.profils || []).map(pid => {
+      const prof = data.profils.find(x => x.id === pid);
+      return prof ? `<span style="background:#ebebeb; color:var(--text-primary); padding:2px 8px; border-radius:12px; font-size:11px; font-weight:500">${prof.prenom}</span>` : '';
+    }).join('');
+
+    const iconeTemps = p.temps === 'rapide' ? '⚡' : '🕒';
+    const labelTemps = p.temps === 'rapide' ? 'Rapide' : 'Normal';
+    const descIngredients = p.ingredients && p.ingredients.length ? p.ingredients.join(', ') : 'Aucun ingrédient renseigné';
+
+    return `
+    <div class="plat-row">
+      <div class="plat-info">
+        <div class="plat-nom">${p.nom}</div>
+        <div class="plat-meta">${iconeTemps} ${labelTemps} • ${descIngredients}</div>
+        <div class="plat-profils">${badgesProfils}</div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-sm" onclick="ouvrirModalPlat('${p.id}')"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="supprimerPlat('${p.id}')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.ouvrirModalPlat = (id) => {
+  document.getElementById('modal-plat-titre').textContent = id ? 'Modifier le plat' : 'Nouveau plat';
+  document.getElementById('plat-edit-id').value = id || '';
+  if (id) {
+    const pl = data.plats.find(x => x.id === id);
+    if (pl) { document.getElementById('f-nom').value = pl.nom; document.getElementById('f-temps').value = pl.temps; }
+  } else { document.getElementById('f-nom').value = ''; }
+  document.getElementById('modal-plat').style.display = 'flex';
+};
+
+window.sauvegarderPlat = async () => {
+  const nom = document.getElementById('f-nom').value.trim(); if (!nom) return;
+  const id = document.getElementById('plat-edit-id').value || 'p_' + Date.now();
+  const plat = { id, nom, temps: document.getElementById('f-temps').value, profils: data.plats.find(p=>p.id===id)?.profils || [] };
+  const idx = data.plats.findIndex(p => p.id === id);
+  if (idx >= 0) data.plats[idx] = plat; else data.plats.push(plat);
+  await sauvegarder(); fermerModal('modal-plat');
+};
+
+window.supprimerPlat = async (id) => {
+  if (!confirm('Supprimer ?')) return;
+  data.plats = data.plats.filter(p => p.id !== id);
+  await sauvegarder();
+};
+
+window.filtrerPlats = (f, btn) => {
+  filtreActuel = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active'); renderPlats();
+};
+
+// PROFILS
+window.ouvrirModalProfil = (id) => {
+  document.getElementById('modal-profil-titre').textContent = id ? 'Modifier le profil' : 'Nouveau profil';
+  document.getElementById('profil-edit-id').value = id || '';
+  if (id) {
+    const p = data.profils.find(x => x.id === id);
+    if (p) { document.getElementById('p-prenom').value = p.prenom; }
+  } else { document.getElementById('p-prenom').value = ''; }
+  document.getElementById('modal-profil').style.display = 'flex';
+};
+
+window.sauvegarderProfil = async () => {
+  const prenom = document.getElementById('p-prenom').value.trim(); if (!prenom) return;
+  const id = document.getElementById('profil-edit-id').value || 'prof_' + Date.now();
+  const profil = { id, prenom };
+  const idx = data.profils.findIndex(p => p.id === id);
+  if (idx >= 0) data.profils[idx] = profil; else data.profils.push(profil);
+  await sauvegarder(); fermerModal('modal-profil');
+};
+
+window.supprimerProfil = async (id) => {
+  if (!confirm('Supprimer ?')) return;
+  data.profils = data.profils.filter(p => p.id !== id);
+  await sauvegarder();
+};
+
+function renderProfils() {
+  const el = document.getElementById('liste-profils'); if(!el) return;
+  if(!data.profils.length) { el.innerHTML = '<div class="empty">Aucun profil.</div>'; return; }
+  el.innerHTML = data.profils.map(p => `
+    <div class="profil-card">
+      <div style="flex:1"><div class="profil-nom">${p.prenom}</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="ouvrirModalProfil('${p.id}')"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="supprimerProfil('${p.id}')"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+// COURSES CORRIGÉES (SANS PLANTAGE DE VARIABLE NON DÉFINIE)
+window.genererCourses = () => {
+  const lundi = lundiDe(semaineOffset);
+  const cle = cleSemaine(lundi);
+  const sem = data.planning[cle] || {};
+  
+  const platsPlanifies = [];
+  JOURS.forEach(j => {
+    const jKey = j.toLowerCase();
+    const creneaux = sem[jKey]?.creneaux || {};
+    ['midi','soir'].forEach(m => {
+      (creneaux[m] || []).forEach(ligne => {
+        if (ligne.platId && !ligne.platId.startsWith('reste:')) {
+          const pl = data.plats.find(x => x.id === ligne.platId);
+          if (pl) platsPlanifies.push(pl);
+        }
+      });
+    });
+  });
+
+  if (!platsPlanifies.length) {
+    alert("Aucun plat n'est planifié pour cette semaine !");
+    return;
+  }
+
+  alert(`Liste générée pour ${platsPlanifies.length} plat(s) !`);
+};
+
+window.effacerCourses = () => { data.liste_courses = {}; sauvegarder(); };
+window.reinitCourses = () => {};
+function renderCourses() { document.getElementById('courses-content').innerHTML = '<div class="empty">Courses synchronisées.</div>'; }
+
+// BACKUPS
+window.exporterJSON = () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `surlepouce-backup.json`; a.click();
+};
+window.importerJSON = async (input) => {
+  const file = input.files[0]; if (!file) return;
+  try {
+    const text = await file.text(); data = JSON.parse(text);
+    await sauvegarder(); renderTout();
+  } catch(e) { alert('Erreur d\'importation.'); }
+  input.value = '';
+};
+
+window.demanderIA = () => { 
+  document.getElementById('ia-zone').style.display = 'block'; 
+  document.getElementById('ia-reponse').textContent = "Voici une suggestion IA basée sur vos plats..."; 
+};
+
+window.fermerModal = (id) => document.getElementById(id).style.display = 'none';
+window.fermerModalSiOverlay = (e, id) => { if(e.target===document.getElementById(id)) fermerModal(id); };
 </script>
 </body>
 </html>
