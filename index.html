@@ -422,7 +422,10 @@ function debutPeriode(offset) {
   return d;
 }
 
-function dateISO(d) { return d.toISOString().slice(0,10); }
+function dateISO(d) {
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), j = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${j}`;
+}
 
 function fmtJourComplet(d) { return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'}); }
 
@@ -556,7 +559,7 @@ window.exporterJSON = () => {
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `surlepouce-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `surlepouce-backup-${dateISO(new Date())}.json`;
   a.click();
   URL.revokeObjectURL(a.href);
 };
@@ -1050,7 +1053,7 @@ IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumu
     }
     const txt = d.content.map(c=>c.text||'').join('');
     const courses = JSON.parse(txt.replace(/```json|```/g,'').trim());
-    data.liste_courses = { generee_le: new Date().toISOString().slice(0,10), rayons:{} };
+    data.liste_courses = { generee_le: dateISO(new Date()), rayons:{} };
     Object.keys(courses).forEach(rayon => { if(courses[rayon].length) data.liste_courses.rayons[rayon] = courses[rayon].map(a=>({article:a,coche:false})); });
     await sauvegarder();
     renderCourses();
