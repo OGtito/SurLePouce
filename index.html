@@ -753,29 +753,35 @@ window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
 // et non encore consommés depuis. Cherche dans tout le planning connu, pas seulement la semaine affichée,
 // pour permettre à un reste déclaré en fin de semaine de survivre sur la semaine suivante.
 function restesDisponibles(dateCleActuelle) {
-  const restesDecl = new Map(); // platId -> date de déclaration la plus récente
-  const restesConsommes = new Set();
+  // État "disponible en reste" par plat, recalculé en parcourant TOUS les jours antérieurs
+  // dans l'ordre chronologique réel (tri explicite des clés-dates, indispensable :
+  // Object.keys() ne garantit pas un ordre trié, seulement l'ordre d'insertion).
+  const disponible = new Map(); // platId -> true/false, dernier état connu
 
-  Object.keys(data.planning).forEach(dCle => {
-    if (dCle >= dateCleActuelle) return; // uniquement strictement avant (comparaison de chaînes ISO = comparaison chronologique)
+  const clesTriees = Object.keys(data.planning).filter(c => c < dateCleActuelle).sort();
+  clesTriees.forEach(dCle => {
     const creneaux = (data.planning[dCle] || {}).creneaux || {};
     ['midi','soir'].forEach(m => {
       (creneaux[m] || []).forEach(ligne => {
         if (!ligne.platId) return;
         if (ligne.platId.startsWith('reste:')) {
+          // Ce repas PIOCHE dans les restes : consommé immédiatement à partir d'ici,
+          // sauf si ce même repas redéclare aussitôt qu'il en reste encore (aReste=true sur cette ligne).
           const pid = ligne.platId.replace('reste:','');
-          restesConsommes.add(pid);
-          if (ligne.aReste) { restesDecl.set(pid, dCle); restesConsommes.delete(pid); }
+          disponible.set(pid, !!ligne.aReste);
         } else {
-          if (ligne.aReste) { restesDecl.set(ligne.platId, dCle); restesConsommes.delete(ligne.platId); }
+          // Plat "normal" (quel que soit le profil, le moment, ou le jour) : dès qu'il est déclaré
+          // en reste, il devient disponible à partir de maintenant. S'il n'est pas déclaré, on ne
+          // touche à rien (ne pas écraser une disponibilité acquise via une autre ligne/jour).
+          if (ligne.aReste) disponible.set(ligne.platId, true);
         }
       });
     });
   });
 
   const disponibles = [];
-  restesDecl.forEach((_, pid) => {
-    if (!restesConsommes.has(pid)) {
+  disponible.forEach((estDispo, pid) => {
+    if (estDispo) {
       const p = data.plats.find(x=>x.id===pid);
       if (p) disponibles.push(p);
     }
