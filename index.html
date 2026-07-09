@@ -62,7 +62,7 @@ textarea{min-height:70px;resize:vertical}
 .plat-info{flex:1;min-width:0}
 .plat-nom{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .plat-meta{font-size:12px;color:var(--text-muted);margin-top:2px}
-.plat-profils{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.plat-profils{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
 .tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
 .tab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;font-family:inherit;background:white;color:var(--text-secondary);white-space:nowrap;flex-shrink:0}
 .tab.active{background:#E1F5EE;border-color:#5DCAA5;color:var(--green-dark)}
@@ -70,7 +70,6 @@ textarea{min-height:70px;resize:vertical}
 .semaine-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
 .semaine-label{flex:1;text-align:center;font-size:14px;font-weight:600}
 
-/* PLANNING & AUTRES */
 .planning-jour{background:white;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:visible}
 .planning-jour-header{border-radius:12px 12px 0 0;background:var(--surface-1);padding:8px 12px;font-weight:600;font-size:14px}
 .planning-creneau{padding:8px 10px;border-bottom:1px solid var(--border)}
@@ -78,12 +77,21 @@ textarea{min-height:70px;resize:vertical}
 .planning-creneau-label{font-size:11px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:4px}
 .planning-ligne{display:flex;align-items:center;gap:6px;margin-bottom:5px}
 .planning-ligne:last-child{margin-bottom:0}
+.planning-profil-sel{flex:0 0 auto;min-width:0;position:relative}
+.profil-btn{padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;display:flex;align-items:center;gap:4px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-secondary)}
+.profil-btn.has-sel{border-color:#5DCAA5;background:#E1F5EE;color:var(--green-dark)}
+.profil-popup{position:absolute;top:calc(100% + 4px);left:0;z-index:300;background:white;border:1px solid var(--border-strong);border-radius:10px;padding:8px;display:none;flex-direction:column;gap:5px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:150px}
+.profil-popup.open{display:flex}
+.profil-badge-opt{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;border:1.5px solid transparent;transition:all .1s;white-space:nowrap}
+.profil-badge-opt.sel{border-width:1.5px}
 .planning-plat-sel{flex:1;min-width:0}
 .planning-plat-sel select{padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:6px;width:100%}
+.planning-ligne-btns{display:flex;gap:4px;flex-shrink:0}
 .btn-icon{padding:4px 7px;font-size:13px;border-radius:6px;border:1px solid var(--border);background:white;cursor:pointer;display:inline-flex;align-items:center;color:var(--text-secondary)}
 .btn-icon:hover{background:var(--surface-1)}
 .btn-icon.add{color:var(--green);border-color:#5DCAA5}
 .btn-icon.del{color:var(--coral);border-color:var(--coral-light)}
+.reste-badge{font-size:10px;background:#FEF3C7;color:#92400E;padding:1px 5px;border-radius:10px;margin-left:4px;font-weight:500}
 
 .rayon-titre{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
 .checklist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
@@ -92,8 +100,24 @@ textarea{min-height:70px;resize:vertical}
 .checklist-item.done span{text-decoration:line-through;color:var(--text-muted)}
 .ia-zone{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:12px}
 .ia-reponse{font-size:14px;line-height:1.8;white-space:pre-wrap}
+.loading-dots::after{content:'...';animation:dots 1.5s infinite}
+@keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
 .profil-card{background:white;border:2px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.profil-color-box{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
 .profil-nom{font-weight:600;font-size:15px}
+.profil-details{font-size:12px;color:var(--text-muted);margin-top:2px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle{position:relative;width:42px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;border-radius:12px;background:var(--border-strong);cursor:pointer;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--green)}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:.2s}
+.toggle input:checked+.toggle-slider:before{left:21px}
+.empty{color:var(--text-muted);font-size:14px;text-align:center;padding:2rem 1rem;line-height:1.6}
+.color-picker{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-option{width:32px;height:32px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:all .15s}
+.color-option.selected{border-color:var(--text-primary)}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
 .modal{background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto}
 .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
@@ -139,6 +163,7 @@ textarea{min-height:70px;resize:vertical}
       <button class="tab active" onclick="filtrerPlats('tous',this)">Tous <span class="badge" id="b-tous">0</span></button>
       <button class="tab" onclick="filtrerPlats('rapide',this)">Rapides <span class="badge" id="b-rapide">0</span></button>
       <button class="tab" onclick="filtrerPlats('normal',this)">Long <span class="badge" id="b-normal">0</span></button>
+      <button class="tab" onclick="filtrerPlats('decouvert',this)">Découverts <span class="badge" id="b-decouvert">0</span></button>
     </div>
     <div id="liste-plats"><div class="empty">Aucun plat encore.<br>Ajoute ton premier plat !</div></div>
   </div>
@@ -169,6 +194,8 @@ textarea{min-height:70px;resize:vertical}
   <div id="s-ia" class="section">
     <h2>Suggestions IA</h2>
     <div class="card">
+      <label>Qui mange ?</label>
+      <div id="ia-profils-sel" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
       <label>Contrainte de temps</label>
       <select id="ia-temps">
         <option value="rapide">Je suis pressé (moins de 20 min)</option>
@@ -177,12 +204,22 @@ textarea{min-height:70px;resize:vertical}
       </select>
       <label>Envie particulière (facultatif)</label>
       <input type="text" id="ia-envie" placeholder="Ex: quelque chose de léger, avec du poulet...">
+      <label>Type de suggestion</label>
+      <select id="ia-type">
+        <option value="suggestion">Idées depuis nos habitudes</option>
+        <option value="declinaison">Décliner un de nos plats</option>
+        <option value="croisement">Croiser deux de nos plats</option>
+        <option value="nouveau">Nouveaux plats dans notre style</option>
+      </select>
       <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="demanderIA()">
         <i class="ti ti-sparkles"></i> Demander à l'IA
       </button>
     </div>
     <div class="ia-zone" id="ia-zone" style="display:none">
       <div class="ia-reponse" id="ia-reponse"></div>
+      <div class="flex-end" id="ia-actions" style="display:none">
+        <button class="btn btn-sm btn-primary" onclick="ajouterDepuisIA()"><i class="ti ti-plus"></i> Ajouter à mes plats</button>
+      </div>
     </div>
   </div>
 
@@ -200,19 +237,19 @@ textarea{min-height:70px;resize:vertical}
       <h3>Sauvegarde locale</h3>
       <div class="alert-box">
         <i class="ti ti-info-circle" style="flex-shrink:0;margin-top:1px"></i>
-        <span>Les données sont synchronisées en temps réel sur Firebase.</span>
+        <span>Les données sont synchronisées en temps réel sur Firebase. La sauvegarde locale est une copie de sécurité que tu peux stocker sur ton téléphone ou Google Drive.</span>
       </div>
       <div class="param-row">
         <div class="param-info">
           <div class="param-label">Exporter les données</div>
-          <div class="param-desc">Télécharge un fichier surlepouce-backup.json</div>
+          <div class="param-desc">Télécharge un fichier surlepouce-backup.json sur ton appareil</div>
         </div>
         <button class="btn btn-primary btn-sm" onclick="exporterJSON()"><i class="ti ti-download"></i> Exporter</button>
       </div>
       <div class="param-row">
         <div class="param-info">
           <div class="param-label">Importer des données</div>
-          <div class="param-desc">Restaure depuis un fichier JSON sauvegardé</div>
+          <div class="param-desc">Restaure depuis un fichier JSON sauvegardé (⚠️ remplace les données actuelles)</div>
         </div>
         <button class="btn btn-warning btn-sm" onclick="document.getElementById('import-file').click()"><i class="ti ti-upload"></i> Importer</button>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importerJSON(this)">
@@ -223,8 +260,9 @@ textarea{min-height:70px;resize:vertical}
       <div class="param-row">
         <div class="param-info">
           <div class="param-label">Premier jour de la semaine</div>
+          <div class="param-desc">Choisir le jour de début du planning</div>
         </div>
-        <select id="param-premier-jour" onchange="sauvegarderPremierJour(this.value)" style="width:auto;padding:6px 10px;">
+        <select id="param-premier-jour" onchange="sauvegarderPremierJour(this.value)" style="width:auto;padding:6px 10px;font-size:13px;border:1px solid var(--border-strong);border-radius:var(--radius)">
           <option value="1">Lundi</option>
           <option value="2">Mardi</option>
           <option value="3">Mercredi</option>
@@ -233,6 +271,20 @@ textarea{min-height:70px;resize:vertical}
           <option value="6">Samedi</option>
           <option value="0">Dimanche</option>
         </select>
+      </div>
+    </div>
+    <div class="param-section">
+      <h3>Informations</h3>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v1.2</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
+    </div>
+    <div class="param-section">
+      <h3>Compte</h3>
+      <div class="param-row">
+        <div class="param-info"><div class="param-label">Se déconnecter</div><div class="param-desc">Ferme ta session sur cet appareil</div></div>
+        <button class="btn btn-danger btn-sm" onclick="seDeconnecter()"><i class="ti ti-logout"></i> Déconnexion</button>
       </div>
     </div>
   </div>
@@ -255,15 +307,27 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <input type="hidden" id="plat-edit-id">
     <label>Nom du plat</label>
-    <input type="text" id="f-nom">
+    <input type="text" id="f-nom" placeholder="Ex: Salade niçoise">
     <label>Temps de préparation</label>
     <select id="f-temps">
       <option value="rapide">Rapide (moins de 20 min)</option>
       <option value="normal">Normal (plus de 20 min)</option>
     </select>
+    <label>Moment idéal</label>
+    <select id="f-moment">
+      <option value="tous">Midi et soir</option>
+      <option value="midi">Midi seulement</option>
+      <option value="soir">Soir seulement</option>
+    </select>
+    <label>Ingrédients principaux (séparés par des virgules)</label>
+    <input type="text" id="f-ingredients" placeholder="Ex: thon, tomates, œufs, olives">
+    <label>Profils compatibles</label>
+    <div id="f-profils-check" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
+    <label>Notes / variantes</label>
+    <textarea id="f-notes" placeholder="Notes, astuces de préparation..."></textarea>
     <div class="flex-end">
       <button class="btn btn-sm" onclick="fermerModal('modal-plat')">Annuler</button>
-      <button class="btn btn-primary btn-sm" onclick="sauvegarderPlat()">Enregistrer</button>
+      <button class="btn btn-primary btn-sm" onclick="sauvegarderPlat()"><i class="ti ti-device-floppy"></i> Enregistrer</button>
     </div>
   </div>
 </div>
@@ -276,10 +340,39 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <input type="hidden" id="profil-edit-id">
     <label>Prénom</label>
-    <input type="text" id="p-prenom">
+    <input type="text" id="p-prenom" placeholder="Ex: Olivier">
+    <label>Couleur</label>
+    <div class="color-picker" id="color-picker">
+      <div class="color-option selected" data-color="#1D9E75" style="background:#1D9E75" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#185FA5" style="background:#185FA5" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#D85A30" style="background:#D85A30" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#BA7517" style="background:#BA7517" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#993556" style="background:#993556" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#534AB7" style="background:#534AB7" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#444441" style="background:#444441" onclick="selColor(this)"></div>
+      <div class="color-option" data-color="#0F6E56" style="background:#0F6E56" onclick="selColor(this)"></div>
+    </div>
+    <label>Emoji / pictogramme</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="emoji-picker">
+      <span class="color-option selected" data-emoji="👤" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid #1a1a1a" onclick="selEmoji(this)">👤</span>
+      <span class="color-option" data-emoji="👨" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👨</span>
+      <span class="color-option" data-emoji="👩" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👩</span>
+      <span class="color-option" data-emoji="👦" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👦</span>
+      <span class="color-option" data-emoji="👧" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">👧</span>
+      <span class="color-option" data-emoji="🧔" style="font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:8px;border:3px solid transparent" onclick="selEmoji(this)">🧔</span>
+    </div>
+    <label style="margin-top:14px">Préférences alimentaires</label>
+    <div class="card" style="margin-top:6px;padding:10px">
+      <div class="toggle-row"><span style="font-size:14px">Légumes cuits</span><label class="toggle"><input type="checkbox" id="p-legcuits"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span style="font-size:14px">Légumes crus</span><label class="toggle"><input type="checkbox" id="p-legcrus" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span style="font-size:14px">Viande</span><label class="toggle"><input type="checkbox" id="p-viande" checked><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><span style="font-size:14px">Poisson</span><label class="toggle"><input type="checkbox" id="p-poisson" checked><span class="toggle-slider"></span></label></div>
+    </div>
+    <label>Allergies / aliments à éviter</label>
+    <input type="text" id="p-allergies" placeholder="Ex: gluten, fruits de mer, abats...">
     <div class="flex-end">
       <button class="btn btn-sm" onclick="fermerModal('modal-profil')">Annuler</button>
-      <button class="btn btn-primary btn-sm" onclick="sauvegarderProfil()">Enregistrer</button>
+      <button class="btn btn-primary btn-sm" onclick="sauvegarderProfil()"><i class="ti ti-device-floppy"></i> Enregistrer</button>
     </div>
   </div>
 </div>
@@ -303,69 +396,140 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const EMAILS_AUTORISES = ['24.24oliviergsm@gmail.com','24.24cecilegsm@gmail.com'];
 
-let data = { profils:[], plats:[], planning:{}, liste_courses:{} };
+let data = { profils:[], plats:[], planning:{}, liste_courses:{}, parametres:{} };
 let filtreActuel = 'tous';
 let semaineOffset = 0;
-let _isRendering = false;
+let colorSelectionnee = '#1D9E75';
+let emojiSelectionne = '👤';
+let _dernierEnvoiJSON = null; // dernier état envoyé à Firestore, pour ignorer l'écho de nos propres écritures
 let unsubscribe = null;
+let currentUser = null;
 
-const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-const JOURS_ISO = [1,2,3,4,5,6,0]; 
+const JOURS_NOMS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi']; // index = JS Date.getDay()
 
-function getPremierJour() { return parseInt(data.parametres?.premier_jour ?? 1); }
-function getJoursOrdonnes() {
-  const premier = getPremierJour();
-  const idx = JOURS_ISO.indexOf(premier);
-  return [...JOURS.slice(idx), ...JOURS.slice(0, idx)];
+function getPremierJour() {
+  // Valeur attendue : 0=Dimanche ... 6=Samedi (convention JS Date.getDay())
+  return parseInt(data.parametres?.premier_jour ?? 1);
 }
 
-// AUTH
+// Calcule la date réelle (00:00) du 1er jour de la période affichée, selon le réglage "premier jour de semaine"
+function debutPeriode(offset) {
+  const premier = getPremierJour();
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  const ecart = (d.getDay() - premier + 7) % 7;
+  d.setDate(d.getDate() - ecart + offset * 7);
+  return d;
+}
+
+function dateISO(d) { return d.toISOString().slice(0,10); }
+
+function fmtJourComplet(d) { return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'}); }
+
+// Retourne les 7 dates réelles (objets Date) de la période affichée, dans l'ordre chronologique
+function joursDeLaPeriode(offset) {
+  const debut = debutPeriode(offset);
+  const jours = [];
+  for (let i=0;i<7;i++) { const d = new Date(debut); d.setDate(d.getDate()+i); jours.push(d); }
+  return jours;
+}
+
+// Migration : ancien format { "AAAA-MM-JJ"(lundi): { "lundi":{creneaux}, "mardi":{...}, ... } }
+//          -> nouveau format { "AAAA-MM-JJ"(date réelle du jour): { creneaux } }
+function migrerPlanningSiBesoin(planningBrut) {
+  const NOMS_ANCIENS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+  const estAncienFormat = Object.values(planningBrut || {}).some(v => v && typeof v === 'object' && NOMS_ANCIENS.some(n => n in v));
+  if (!estAncienFormat) return planningBrut || {};
+  const nouveau = {};
+  Object.keys(planningBrut).forEach(cleLundi => {
+    const lundi = new Date(cleLundi + 'T00:00:00');
+    if (isNaN(lundi.getTime())) return;
+    NOMS_ANCIENS.forEach((nom, i) => {
+      const jourData = planningBrut[cleLundi][nom];
+      if (!jourData || !jourData.creneaux) return;
+      const d = new Date(lundi); d.setDate(d.getDate() + i);
+      nouveau[dateISO(d)] = { creneaux: jourData.creneaux };
+    });
+  });
+  return nouveau;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+// ===================== AUTH =====================
 window.signerAvecGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     if (!EMAILS_AUTORISES.includes(result.user.email)) {
       await signOut(auth);
-      document.getElementById('auth-error').textContent = "Accès non autorisé.";
+      document.getElementById('auth-error').textContent = "Accès non autorisé pour cette adresse email.";
     }
-  } catch(e) { document.getElementById('auth-error').textContent = "Erreur de connexion."; }
+  } catch(e) {
+    document.getElementById('auth-error').textContent = "Erreur de connexion. Réessaie.";
+  }
 };
+
 window.seDeconnecter = () => signOut(auth);
 
 onAuthStateChanged(auth, async (user) => {
   if (user && EMAILS_AUTORISES.includes(user.email)) {
+    currentUser = user;
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
+    const photo = document.getElementById('user-photo');
+    if (user.photoURL) { photo.src = user.photoURL; photo.style.display = 'block'; }
+    document.getElementById('param-user-email').textContent = user.email;
     await chargerDonnees();
   } else {
+    currentUser = null;
     document.getElementById('auth-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
     if (unsubscribe) unsubscribe();
   }
 });
 
+// ===================== FIRESTORE =====================
 async function chargerDonnees() {
   const ref = doc(db, 'surlepouce', 'famille');
   unsubscribe = onSnapshot(ref, (snap) => {
-    if (snap.exists()) {
-      data = snap.data();
-      if (!data.profils) data.profils = [];
-      if (!data.plats) data.plats = [];
-      if (!data.planning) data.planning = {};
-      if (!data.liste_courses) data.liste_courses = {};
-    }
+    if (!snap.exists()) { renderTout(); return; }
+    const incoming = snap.data();
+    const incomingJSON = JSON.stringify(incoming);
+    // Si ce qui revient de Firestore est exactement ce qu'on vient d'envoyer nous-même,
+    // c'est un simple écho de notre propre écriture : inutile de tout re-rendre (évite de fermer
+    // un popup ouvert ou de perdre le focus en pleine saisie).
+    if (_dernierEnvoiJSON !== null && incomingJSON === _dernierEnvoiJSON) return;
+    data.profils = incoming.profils || [];
+    data.plats = incoming.plats || [];
+    data.planning = migrerPlanningSiBesoin(incoming.planning || {});
+    data.liste_courses = incoming.liste_courses || {};
+    data.parametres = incoming.parametres || {};
     renderTout();
   });
 }
 
 async function sauvegarder() {
-  try { await setDoc(doc(db, 'surlepouce', 'famille'), data); } catch(e) { console.error(e); }
+  try {
+    _dernierEnvoiJSON = JSON.stringify(data);
+    await setDoc(doc(db, 'surlepouce', 'famille'), data);
+  } catch(e) { alert('Erreur de sauvegarde : ' + e.message); }
 }
 
 function renderTout() {
-  renderPlats(); renderProfils(); renderPlanning(); renderCourses(); chargerPremierJour();
+  renderPlats();
+  renderProfils();
+  renderPlanning();
+  renderCourses();
+  renderIAProfils();
+  renderParamStats();
+  chargerPremierJour();
 }
 
+// ===================== NAVIGATION =====================
 window.showSection = (id, btn) => {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -374,258 +538,115 @@ window.showSection = (id, btn) => {
   if (id === 'planning') renderPlanning();
 };
 
+// ===================== EXPORT / IMPORT =====================
 window.sauvegarderPremierJour = async (val) => {
   if (!data.parametres) data.parametres = {};
   data.parametres.premier_jour = parseInt(val);
   await sauvegarder();
+  renderPlanning();
 };
+
 function chargerPremierJour() {
   const val = data.parametres?.premier_jour ?? 1;
   const sel = document.getElementById('param-premier-jour');
   if (sel) sel.value = String(val);
 }
 
-// RESTES
-function restesDisponibles(cle, jourIndex) {
-  const sem = data.planning[cle] || {};
-  const joursOrd = getJoursOrdonnes();
-  const tousLesRestesGeneres = new Map(); 
-  const restesConsommes = new Set();
-  
-  joursOrd.slice(0, jourIndex + 1).forEach(j => {
-    const creneaux = (sem[j.toLowerCase()] || {}).creneaux || {};
-    ['midi','soir'].forEach(m => {
-      (creneaux[m] || []).forEach(ligne => {
-        if (!ligne.platId) return;
-        if (ligne.platId.startsWith('reste:')) {
-          const pid = ligne.platId.replace('reste:','');
-          restesConsommes.add(pid);
-          if (ligne.aReste) tousLesRestesGeneres.set(pid, true);
-        } else if (ligne.aReste) {
-          tousLesRestesGeneres.set(ligne.platId, true);
-        }
-      });
-    });
-  });
+window.exporterJSON = () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `surlepouce-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
 
-  const disponibles = [];
-  for (let pid of tousLesRestesGeneres.keys()) {
-    if (!restesConsommes.has(pid)) {
-      const p = data.plats.find(x=>x.id===pid);
-      if (p) disponibles.push(p);
-    }
-  }
-  return disponibles;
+window.importerJSON = async (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  if (!confirm('⚠️ Cette action va remplacer toutes les données actuelles. Es-tu sûr ?')) { input.value=''; return; }
+  try {
+    const text = await file.text();
+    const imported = JSON.parse(text);
+    if (!imported.plats || !imported.profils) { alert('Fichier JSON invalide.'); return; }
+    imported.planning = migrerPlanningSiBesoin(imported.planning || {});
+    imported.parametres = imported.parametres || {};
+    imported.liste_courses = imported.liste_courses || {};
+    data = imported;
+    await sauvegarder();
+    renderTout();
+    alert('Données importées avec succès !');
+  } catch(e) { alert('Erreur lors de l\'import : fichier invalide.'); }
+  input.value = '';
+};
+
+function renderParamStats() {
+  document.getElementById('param-nb-plats').textContent = `${data.plats.length} plat(s) enregistré(s)`;
+  document.getElementById('param-nb-profils').textContent = `${data.profils.length} profil(s) configuré(s)`;
 }
 
-// PLANNING
-function lundiDe(offset) {
-  const d = new Date(); const j = d.getDay()||7;
-  d.setDate(d.getDate()-j+1+offset*7); d.setHours(0,0,0,0); return d;
-}
-function fmtDate(d) { return d.toLocaleDateString('fr-FR',{day:'numeric',month:'long'}); }
-function cleSemaine(d) { return d.toISOString().slice(0,10); }
-
-window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
-
-function optsPlat(cle, jourIndex) {
-  const restes = restesDisponibles(cle, jourIndex);
-  let html = '<option value="">— Choisir —</option><optgroup label="🍽️ Plats">';
-  data.plats.forEach(p => { html += `<option value="${p.id}">${p.nom}</option>`; });
-  html += '</optgroup>';
-  if (restes.length) {
-    html += '<optgroup label="♻️ Restes">';
-    restes.forEach(p => { html += `<option value="reste:${p.id}">Reste : ${p.nom}</option>`; });
-    html += '</optgroup>';
-  }
-  return html;
-}
-
-window.renderPlanning = () => {
-  if (_isRendering) return;
-  _isRendering = true;
-
-  const lundi = lundiDe(semaineOffset);
-  document.getElementById('semaine-label').textContent = `${fmtDate(lundi)}`;
-  const cle = cleSemaine(lundi);
-  if (!data.planning[cle]) data.planning[cle] = {};
-
-  const joursOrdonnes = getJoursOrdonnes();
-  document.getElementById('grid-planning').innerHTML = joursOrdonnes.map((jour, jourIndex) => {
-    const jKey = jour.toLowerCase();
-    return `<div class="planning-jour">
-      <div class="planning-jour-header">${jour}</div>
-      <div class="planning-creneau" id="creneau-${cle}-${jKey}-midi">
-        <div class="planning-creneau-label">🌞 Midi</div>
-        <div id="lignes-${cle}-${jKey}-midi"></div>
-        <button class="btn-icon add" onclick="ajouterLigne('${cle}','${jKey}','midi',${jourIndex})"><i class="ti ti-plus"></i></button>
-      </div>
-      <div class="planning-creneau" id="creneau-${cle}-${jKey}-soir">
-        <div class="planning-creneau-label">🌙 Soir</div>
-        <div id="lignes-${cle}-${jKey}-soir"></div>
-        <button class="btn-icon add" onclick="ajouterLigne('${cle}','${jKey}','soir',${jourIndex})"><i class="ti ti-plus"></i></button>
-      </div>
-    </div>`;
-  }).join('');
-
-  const sem = data.planning[cle];
-  joursOrdonnes.forEach((jour, jourIndex) => {
-    const jKey = jour.toLowerCase();
-    const jd = sem[jKey] || {};
-    const creneaux = jd.creneaux || {};
-    ['midi','soir'].forEach(moment => {
-      const lignes = creneaux[moment] || [];
-      lignes.forEach((ligne, li) => renderLigne(cle, jKey, moment, jourIndex, ligne, li));
-    });
-  });
-
-  _isRendering = false;
-};
-
-function renderLigne(cle, jKey, moment, jourIndex, ligne, li) {
-  const container = document.getElementById(`lignes-${cle}-${jKey}-${moment}`);
-  if (!container) return;
-  const div = document.createElement('div');
-  div.className = 'planning-ligne';
-  div.innerHTML = `
-    <div class="planning-plat-sel"><select onchange="majLigne('${cle}','${jKey}','${moment}',${li},'platId',this.value)">${optsPlat(cle, jourIndex)}</select></div>
-    <button class="btn-icon" style="${ligne.aReste?'color:#1D9E75;background:#E1F5EE':''}" onclick="toggleReste('${cle}','${jKey}','${moment}',${li})">🥗</button>
-    <button class="btn-icon del" onclick="supprimerLigne('${cle}','${jKey}','${moment}',${li})"><i class="ti ti-trash"></i></button>
-  `;
-  container.appendChild(div);
-  div.querySelector('select').value = ligne.platId || '';
-}
-
-window.ajouterLigne = async (cle, jKey, moment, jourIndex) => {
-  if (!data.planning[cle]) data.planning[cle] = {};
-  if (!data.planning[cle][jKey]) data.planning[cle][jKey] = {creneaux:{}};
-  if (!data.planning[cle][jKey].creneaux[moment]) data.planning[cle][jKey].creneaux[moment] = [];
-  data.planning[cle][jKey].creneaux[moment].push({platId:'', aReste:false});
-  await sauvegarder();
-  renderPlanning();
-};
-
-window.toggleReste = async (cle, jKey, moment, li) => {
-  const l = data.planning[cle][jKey].creneaux[moment][li];
-  l.aReste = !l.aReste;
-  await sauvegarder();
-  renderPlanning();
-};
-
-window.majLigne = async (cle, jKey, moment, li, champ, valeur) => {
-  data.planning[cle][jKey].creneaux[moment][li][champ] = valeur;
-  await sauvegarder();
-  renderPlanning();
-};
-
-window.supprimerLigne = async (cle, jKey, moment, li) => {
-  data.planning[cle][jKey].creneaux[moment].splice(li, 1);
-  await sauvegarder();
-  renderPlanning();
-};
-
-// PLATS AVEC BADGES DE PROFILS RESTAURÉS
-function renderPlats() {
-  const el = document.getElementById('liste-plats'); if(!el) return;
-  document.getElementById('b-tous').textContent = data.plats.length;
-  document.getElementById('b-rapide').textContent = data.plats.filter(p=>p.temps==='rapide').length;
-  document.getElementById('b-normal').textContent = data.plats.filter(p=>p.temps==='normal').length;
-  
-  let plats = data.plats;
-  if (filtreActuel==='rapide') plats = plats.filter(p=>p.temps==='rapide');
-  else if (filtreActuel==='normal') plats = plats.filter(p=>p.temps==='normal');
-  
-  if(!plats.length) { el.innerHTML = '<div class="empty">Aucun plat.</div>'; return; }
-  
-  el.innerHTML = plats.map(p => {
-    // Génération des petites tuiles de profils (Ex: Cécile, Olivier...)
-    const badgesProfils = (p.profils || []).map(pid => {
-      const prof = data.profils.find(x => x.id === pid);
-      return prof ? `<span style="background:#ebebeb; color:var(--text-primary); padding:2px 8px; border-radius:12px; font-size:11px; font-weight:500">${prof.prenom}</span>` : '';
-    }).join('');
-
-    const iconeTemps = p.temps === 'rapide' ? '⚡' : '🕒';
-    const labelTemps = p.temps === 'rapide' ? 'Rapide' : 'Normal';
-    const descIngredients = p.ingredients && p.ingredients.length ? p.ingredients.join(', ') : 'Aucun ingrédient renseigné';
-
-    return `
-    <div class="plat-row">
-      <div class="plat-info">
-        <div class="plat-nom">${p.nom}</div>
-        <div class="plat-meta">${iconeTemps} ${labelTemps} • ${descIngredients}</div>
-        <div class="plat-profils">${badgesProfils}</div>
-      </div>
-      <div style="display:flex; gap:6px;">
-        <button class="btn btn-sm" onclick="ouvrirModalPlat('${p.id}')"><i class="ti ti-edit"></i></button>
-        <button class="btn btn-sm btn-danger" onclick="supprimerPlat('${p.id}')"><i class="ti ti-trash"></i></button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-window.ouvrirModalPlat = (id) => {
-  document.getElementById('modal-plat-titre').textContent = id ? 'Modifier le plat' : 'Nouveau plat';
-  document.getElementById('plat-edit-id').value = id || '';
-  if (id) {
-    const pl = data.plats.find(x => x.id === id);
-    if (pl) { document.getElementById('f-nom').value = pl.nom; document.getElementById('f-temps').value = pl.temps; }
-  } else { document.getElementById('f-nom').value = ''; }
-  document.getElementById('modal-plat').style.display = 'flex';
-};
-
-window.sauvegarderPlat = async () => {
-  const nom = document.getElementById('f-nom').value.trim(); if (!nom) return;
-  const id = document.getElementById('plat-edit-id').value || 'p_' + Date.now();
-  const plat = { id, nom, temps: document.getElementById('f-temps').value, profils: data.plats.find(p=>p.id===id)?.profils || [] };
-  const idx = data.plats.findIndex(p => p.id === id);
-  if (idx >= 0) data.plats[idx] = plat; else data.plats.push(plat);
-  await sauvegarder(); fermerModal('modal-plat');
-};
-
-window.supprimerPlat = async (id) => {
-  if (!confirm('Supprimer ?')) return;
-  data.plats = data.plats.filter(p => p.id !== id);
-  await sauvegarder();
-};
-
-window.filtrerPlats = (f, btn) => {
-  filtreActuel = f;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active'); renderPlats();
-};
-
-// PROFILS
+// ===================== PROFILS =====================
 window.ouvrirModalProfil = (id) => {
   document.getElementById('modal-profil-titre').textContent = id ? 'Modifier le profil' : 'Nouveau profil';
   document.getElementById('profil-edit-id').value = id || '';
   if (id) {
     const p = data.profils.find(x => x.id === id);
-    if (p) { document.getElementById('p-prenom').value = p.prenom; }
-  } else { document.getElementById('p-prenom').value = ''; }
+    if (p) {
+      document.getElementById('p-prenom').value = p.prenom;
+      document.getElementById('p-legcuits').checked = p.preferences?.legumes_cuits || false;
+      document.getElementById('p-legcrus').checked = p.preferences?.legumes_crus !== false;
+      document.getElementById('p-viande').checked = p.preferences?.viande !== false;
+      document.getElementById('p-poisson').checked = p.preferences?.poisson !== false;
+      document.getElementById('p-allergies').value = (p.allergies||[]).join(', ');
+      colorSelectionnee = p.couleur || '#1D9E75';
+      emojiSelectionne = p.emoji || '👤';
+    }
+  } else {
+    document.getElementById('p-prenom').value = '';
+    document.getElementById('p-allergies').value = '';
+    colorSelectionnee = '#1D9E75'; emojiSelectionne = '👤';
+  }
+  document.querySelectorAll('.color-option[data-color]').forEach(el => el.classList.toggle('selected', el.dataset.color === colorSelectionnee));
+  document.querySelectorAll('#emoji-picker span').forEach(el => el.style.borderColor = el.dataset.emoji === emojiSelectionne ? '#1a1a1a' : 'transparent');
   document.getElementById('modal-profil').style.display = 'flex';
 };
 
 window.sauvegarderProfil = async () => {
-  const prenom = document.getElementById('p-prenom').value.trim(); if (!prenom) return;
+  const prenom = document.getElementById('p-prenom').value.trim();
+  if (!prenom) { alert('Saisis un prénom !'); return; }
   const id = document.getElementById('profil-edit-id').value || 'prof_' + Date.now();
-  const profil = { id, prenom };
+  const profil = {
+    id, prenom, couleur: colorSelectionnee, emoji: emojiSelectionne,
+    preferences: {
+      legumes_cuits: document.getElementById('p-legcuits').checked,
+      legumes_crus: document.getElementById('p-legcrus').checked,
+      viande: document.getElementById('p-viande').checked,
+      poisson: document.getElementById('p-poisson').checked,
+    },
+    allergies: document.getElementById('p-allergies').value.split(',').map(x=>x.trim()).filter(Boolean)
+  };
   const idx = data.profils.findIndex(p => p.id === id);
   if (idx >= 0) data.profils[idx] = profil; else data.profils.push(profil);
-  await sauvegarder(); fermerModal('modal-profil');
+  await sauvegarder();
+  fermerModal('modal-profil');
 };
 
 window.supprimerProfil = async (id) => {
-  if (!confirm('Supprimer ?')) return;
+  if (!confirm('Supprimer ce profil ?')) return;
   data.profils = data.profils.filter(p => p.id !== id);
   await sauvegarder();
 };
 
 function renderProfils() {
-  const el = document.getElementById('liste-profils'); if(!el) return;
-  if(!data.profils.length) { el.innerHTML = '<div class="empty">Aucun profil.</div>'; return; }
+  const el = document.getElementById('liste-profils');
+  if (!data.profils.length) { el.innerHTML = '<div class="empty">Aucun profil.<br>Ajoute les membres de la famille !</div>'; return; }
   el.innerHTML = data.profils.map(p => `
     <div class="profil-card">
-      <div style="flex:1"><div class="profil-nom">${p.prenom}</div></div>
+      <div class="profil-color-box" style="background:${p.couleur}20;color:${p.couleur}">${p.emoji}</div>
+      <div style="flex:1">
+        <div class="profil-nom" style="color:${p.couleur}">${escapeHtml(p.prenom)}</div>
+        <div class="profil-details">Légumes cuits : ${p.preferences?.legumes_cuits?'✓':'✗'} · ${(p.allergies||[]).length?'Évite : '+escapeHtml(p.allergies.join(', ')):'Aucune allergie'}</div>
+      </div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-sm" onclick="ouvrirModalProfil('${p.id}')"><i class="ti ti-edit"></i></button>
         <button class="btn btn-sm btn-danger" onclick="supprimerProfil('${p.id}')"><i class="ti ti-trash"></i></button>
@@ -633,60 +654,559 @@ function renderProfils() {
     </div>`).join('');
 }
 
-// COURSES CORRIGÉES (SANS PLANTAGE DE VARIABLE NON DÉFINIE)
-window.genererCourses = () => {
-  const lundi = lundiDe(semaineOffset);
-  const cle = cleSemaine(lundi);
-  const sem = data.planning[cle] || {};
-  
-  const platsPlanifies = [];
-  JOURS.forEach(j => {
-    const jKey = j.toLowerCase();
-    const creneaux = sem[jKey]?.creneaux || {};
+// ===================== PLATS =====================
+window.ouvrirModalPlat = (id) => {
+  document.getElementById('modal-plat-titre').textContent = id ? 'Modifier le plat' : 'Nouveau plat';
+  document.getElementById('plat-edit-id').value = id || '';
+  const checkContainer = document.getElementById('f-profils-check');
+  checkContainer.innerHTML = data.profils.map(p => `
+    <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13px;margin-top:0">
+      <input type="checkbox" value="${p.id}" style="width:16px;height:16px;accent-color:${p.couleur}">
+      <span style="background:${p.couleur}20;color:${p.couleur};padding:2px 8px;border-radius:20px;font-weight:500">${p.emoji} ${escapeHtml(p.prenom)}</span>
+    </label>`).join('');
+  if (id) {
+    const pl = data.plats.find(x => x.id === id);
+    if (pl) {
+      document.getElementById('f-nom').value = pl.nom;
+      document.getElementById('f-temps').value = pl.temps;
+      document.getElementById('f-moment').value = pl.moment;
+      document.getElementById('f-ingredients').value = (pl.ingredients||[]).join(', ');
+      document.getElementById('f-notes').value = pl.notes || '';
+      checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = (pl.profils||[]).includes(cb.value); });
+    }
+  } else {
+    ['f-nom','f-ingredients','f-notes'].forEach(i => document.getElementById(i).value = '');
+    checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+  }
+  document.getElementById('modal-plat').style.display = 'flex';
+};
+
+window.sauvegarderPlat = async () => {
+  const nom = document.getElementById('f-nom').value.trim();
+  if (!nom) { alert('Donne un nom au plat !'); return; }
+  const profils = [...document.querySelectorAll('#f-profils-check input:checked')].map(cb => cb.value);
+  const id = document.getElementById('plat-edit-id').value || 'p_' + Date.now();
+  const existant = data.plats.find(p => p.id === id);
+  const plat = {
+    id, nom,
+    temps: document.getElementById('f-temps').value,
+    moment: document.getElementById('f-moment').value,
+    ingredients: document.getElementById('f-ingredients').value.split(',').map(x=>x.trim()).filter(Boolean),
+    notes: document.getElementById('f-notes').value,
+    profils,
+    categorie: existant?.categorie || 'plats_maison'
+  };
+  const idx = data.plats.findIndex(p => p.id === id);
+  if (idx >= 0) data.plats[idx] = plat; else data.plats.push(plat);
+  await sauvegarder();
+  fermerModal('modal-plat');
+};
+
+window.supprimerPlat = async (id) => {
+  if (!confirm('Supprimer ce plat ?')) return;
+  data.plats = data.plats.filter(p => p.id !== id);
+  await sauvegarder();
+};
+
+window.filtrerPlats = (f, btn) => {
+  filtreActuel = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlats();
+};
+
+function renderPlats() {
+  const el = document.getElementById('liste-plats');
+  document.getElementById('b-tous').textContent = data.plats.length;
+  document.getElementById('b-rapide').textContent = data.plats.filter(p=>p.temps==='rapide').length;
+  document.getElementById('b-normal').textContent = data.plats.filter(p=>p.temps==='normal').length;
+  document.getElementById('b-decouvert').textContent = data.plats.filter(p=>p.categorie==='plats_decouverts').length;
+  let plats = data.plats;
+  if (filtreActuel==='rapide') plats = plats.filter(p=>p.temps==='rapide');
+  else if (filtreActuel==='normal') plats = plats.filter(p=>p.temps==='normal');
+  else if (filtreActuel==='decouvert') plats = plats.filter(p=>p.categorie==='plats_decouverts');
+  if (!plats.length) { el.innerHTML = '<div class="empty">Aucun plat trouvé.</div>'; return; }
+  el.innerHTML = plats.map(p => {
+    const badges = (p.profils||[]).map(pid => {
+      const prof = data.profils.find(x=>x.id===pid);
+      return prof ? `<span style="background:${prof.couleur}20;color:${prof.couleur};padding:1px 6px;border-radius:20px;font-size:11px;font-weight:500">${prof.emoji} ${escapeHtml(prof.prenom)}</span>` : '';
+    }).join('');
+    return `<div class="plat-row">
+      <div class="plat-info">
+        <div class="plat-nom">${escapeHtml(p.nom)}</div>
+        <div class="plat-meta">${escapeHtml((p.ingredients||[]).slice(0,4).join(', '))||'—'}</div>
+        <div class="plat-profils">${badges}</div>
+      </div>
+      <span class="tag tag-${p.temps}">${p.temps==='rapide'?'Rapide':'Normal'}</span>
+      ${p.categorie==='plats_decouverts'?'<span class="tag tag-decouvert">Découvert</span>':''}
+      <button class="btn btn-sm" onclick="ouvrirModalPlat('${p.id}')"><i class="ti ti-edit"></i></button>
+      <button class="btn btn-sm btn-danger" onclick="supprimerPlat('${p.id}')"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+// ===================== PLANNING =====================
+window.changerSemaine = (d) => { semaineOffset += d; renderPlanning(); };
+
+// Restes disponibles pour une date donnée = plats déclarés en reste (aReste=true) sur une date
+// STRICTEMENT antérieure (comparaison de vraies dates ISO, indépendante de l'ordre d'affichage),
+// et non encore consommés depuis. Cherche dans tout le planning connu, pas seulement la semaine affichée,
+// pour permettre à un reste déclaré en fin de semaine de survivre sur la semaine suivante.
+function restesDisponibles(dateCleActuelle) {
+  const restesDecl = new Map(); // platId -> date de déclaration la plus récente
+  const restesConsommes = new Set();
+
+  Object.keys(data.planning).forEach(dCle => {
+    if (dCle >= dateCleActuelle) return; // uniquement strictement avant (comparaison de chaînes ISO = comparaison chronologique)
+    const creneaux = (data.planning[dCle] || {}).creneaux || {};
     ['midi','soir'].forEach(m => {
       (creneaux[m] || []).forEach(ligne => {
-        if (ligne.platId && !ligne.platId.startsWith('reste:')) {
-          const pl = data.plats.find(x => x.id === ligne.platId);
-          if (pl) platsPlanifies.push(pl);
+        if (!ligne.platId) return;
+        if (ligne.platId.startsWith('reste:')) {
+          const pid = ligne.platId.replace('reste:','');
+          restesConsommes.add(pid);
+          if (ligne.aReste) { restesDecl.set(pid, dCle); restesConsommes.delete(pid); }
+        } else {
+          if (ligne.aReste) { restesDecl.set(ligne.platId, dCle); restesConsommes.delete(ligne.platId); }
         }
       });
     });
   });
 
-  if (!platsPlanifies.length) {
-    alert("Aucun plat n'est planifié pour cette semaine !");
-    return;
+  const disponibles = [];
+  restesDecl.forEach((_, pid) => {
+    if (!restesConsommes.has(pid)) {
+      const p = data.plats.find(x=>x.id===pid);
+      if (p) disponibles.push(p);
+    }
+  });
+  return disponibles;
+}
+
+function optsPlat(dateCle) {
+  const restes = restesDisponibles(dateCle);
+  let html = '<option value="">— Choisir —</option><optgroup label="🍽️ Plats">';
+  data.plats.forEach(p => { html += `<option value="${p.id}">${escapeHtml(p.nom)}</option>`; });
+  html += '</optgroup>';
+  if (restes.length) {
+    html += '<optgroup label="♻️ Restes">';
+    restes.forEach(p => { html += `<option value="reste:${p.id}">Reste : ${escapeHtml(p.nom)}</option>`; });
+    html += '</optgroup>';
+  }
+  return html;
+}
+
+function renderPlanning() {
+  const jours = joursDeLaPeriode(semaineOffset);
+  const debut = jours[0], fin = jours[6];
+  document.getElementById('semaine-label').textContent =
+    `${debut.toLocaleDateString('fr-FR',{day:'numeric',month:'long'})} — ${fin.toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}`;
+
+  jours.forEach(d => { const c = dateISO(d); if (!data.planning[c]) data.planning[c] = { creneaux: {} }; });
+
+  document.getElementById('grid-planning').innerHTML = jours.map(d => {
+    const cle = dateISO(d);
+    const label = fmtJourComplet(d);
+    return `<div class="planning-jour">
+      <div class="planning-jour-header">${escapeHtml(label)}</div>
+      <div class="planning-creneau" id="creneau-${cle}-midi">
+        <div class="planning-creneau-label">🌞 Midi</div>
+        <div id="lignes-${cle}-midi"></div>
+        <button class="btn-icon add" style="margin-top:5px" onclick="ajouterLigne('${cle}','midi')"><i class="ti ti-plus"></i></button>
+      </div>
+      <div class="planning-creneau" id="creneau-${cle}-soir">
+        <div class="planning-creneau-label">🌙 Soir</div>
+        <div id="lignes-${cle}-soir"></div>
+        <button class="btn-icon add" style="margin-top:5px" onclick="ajouterLigne('${cle}','soir')"><i class="ti ti-plus"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+
+  jours.forEach(d => {
+    const cle = dateISO(d);
+    const creneaux = (data.planning[cle] || {}).creneaux || {};
+    ['midi','soir'].forEach(moment => {
+      const lignes = creneaux[moment] || [];
+      if (lignes.length === 0) {
+        renderLigne(cle, moment, { profils:[], platId:'' }, 0);
+      } else {
+        lignes.forEach((ligne, li) => renderLigne(cle, moment, ligne, li));
+      }
+    });
+  });
+}
+
+function renderLigne(cle, moment, ligne, li) {
+  const container = document.getElementById(`lignes-${cle}-${moment}`);
+  if (!container) return;
+  const profilsSelIds = ligne?.profils || [];
+  const hasSel = profilsSelIds.length > 0;
+
+  function bullesProfils(ids) {
+    if (!ids.length) return '<span style="font-size:11px;color:var(--text-muted)">— Qui ?</span>';
+    return ids.map(id => {
+      const p = data.profils.find(x=>x.id===id);
+      if (!p) return '';
+      const prenoms = p.prenom.split(/[&,]/).map(s=>s.trim()).filter(Boolean);
+      const initiales = prenoms.map(n=>n.substring(0,2)).join(' ');
+      const nbPersonnes = prenoms.length;
+      const largeur = nbPersonnes > 1 ? (nbPersonnes * 18 + 8) + 'px' : '22px';
+      return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;width:${largeur};height:22px;border-radius:11px;background:${p.couleur};color:white;font-size:10px;font-weight:700;flex-shrink:0;padding:0 4px" title="${escapeHtml(p.prenom)}">${escapeHtml(initiales)}</span>`;
+    }).join('');
   }
 
-  alert(`Liste générée pour ${platsPlanifies.length} plat(s) !`);
+  const div = document.createElement('div');
+  div.className = 'planning-ligne';
+  div.id = `ligne-${cle}-${moment}-${li}`;
+
+  const profilSelDiv = document.createElement('div');
+  profilSelDiv.className = 'planning-profil-sel';
+
+  const btn = document.createElement('button');
+  btn.className = `profil-btn${hasSel?' has-sel':''}`;
+  btn.innerHTML = bullesProfils(profilsSelIds);
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.profil-popup.open').forEach(p => { if(p !== popup) p.classList.remove('open'); });
+    popup.classList.toggle('open');
+  };
+
+  const popup = document.createElement('div');
+  popup.className = 'profil-popup';
+
+  data.profils.forEach(p => {
+    const isSel = profilsSelIds.includes(p.id);
+    const opt = document.createElement('div');
+    opt.className = `profil-badge-opt${isSel?' sel':''}`;
+    opt.style.cssText = isSel
+      ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
+      : `background:var(--surface-1);color:var(--text-secondary)`;
+    opt.innerHTML = `${p.emoji} ${escapeHtml(p.prenom)}`;
+    opt.onclick = async (e) => {
+      e.stopPropagation();
+      const idx = profilsSelIds.indexOf(p.id);
+      if (idx >= 0) profilsSelIds.splice(idx, 1);
+      else profilsSelIds.push(p.id);
+      
+      const nowSel = profilsSelIds.includes(p.id);
+      opt.className = `profil-badge-opt${nowSel?' sel':''}`;
+      opt.style.cssText = nowSel
+        ? `background:${p.couleur}15;border-color:${p.couleur};color:${p.couleur}`
+        : `background:var(--surface-1);color:var(--text-secondary)`;
+      
+      btn.innerHTML = bullesProfils(profilsSelIds);
+      btn.className = `profil-btn${profilsSelIds.length>0?' has-sel':''}`;
+      
+      // Assurer l'existence de l'arborescence avant écriture
+      if (!data.planning[cle]) data.planning[cle] = { creneaux: {} };
+      if (!data.planning[cle].creneaux) data.planning[cle].creneaux = {};
+      if (!data.planning[cle].creneaux[moment]) data.planning[cle].creneaux[moment] = [];
+      if (!data.planning[cle].creneaux[moment][li]) {
+        data.planning[cle].creneaux[moment][li] = { platId: '', profils: [] };
+      }
+      data.planning[cle].creneaux[moment][li].profils = [...profilsSelIds];
+      await sauvegarder();
+    };
+    popup.appendChild(opt);
+  });
+
+  popup.addEventListener('click', e => e.stopPropagation());
+  profilSelDiv.appendChild(btn);
+  profilSelDiv.appendChild(popup);
+
+  const platSelDiv = document.createElement('div');
+  platSelDiv.className = 'planning-plat-sel';
+  const platSel = document.createElement('select');
+  platSel.innerHTML = optsPlat(cle);
+  platSel.onchange = (e) => majLigne(cle, moment, li, 'platId', e.target.value);
+  platSelDiv.appendChild(platSel);
+
+  const resteBtn = document.createElement('button');
+  const aReste = ligne?.aReste || false;
+  resteBtn.className = 'btn-icon';
+  resteBtn.title = aReste ? 'Reste déclaré (clique pour désactiver)' : 'Déclarer un reste';
+  resteBtn.style.cssText = aReste ? 'color:#1D9E75;border-color:#5DCAA5;background:#E1F5EE' : '';
+  resteBtn.innerHTML = '🥗';
+  resteBtn.onclick = async () => {
+    // Assure l'existence de la ligne même si elle n'a pas encore été touchée (cas 1re ligne vide auto-affichée)
+    if (!data.planning[cle]) data.planning[cle] = { creneaux: {} };
+    if (!data.planning[cle].creneaux) data.planning[cle].creneaux = {};
+    if (!data.planning[cle].creneaux[moment]) data.planning[cle].creneaux[moment] = [];
+    if (!data.planning[cle].creneaux[moment][li]) {
+      data.planning[cle].creneaux[moment][li] = { platId: platSel.value || '', profils: [...profilsSelIds] };
+    }
+    data.planning[cle].creneaux[moment][li].aReste = !data.planning[cle].creneaux[moment][li].aReste;
+    await sauvegarder();
+    renderPlanning();
+  };
+
+  const btnsDiv = document.createElement('div');
+  btnsDiv.className = 'planning-ligne-btns';
+  btnsDiv.innerHTML = `<button class="btn-icon del" onclick="supprimerLigne('${cle}','${moment}',${li})"><i class="ti ti-trash"></i></button>`;
+
+  div.appendChild(profilSelDiv);
+  div.appendChild(platSelDiv);
+  div.appendChild(resteBtn);
+  div.appendChild(btnsDiv);
+  container.appendChild(div);
+
+  if (ligne?.platId) platSel.value = ligne.platId;
+  if (ligne?.platId?.startsWith('reste:')) {
+    const badge = document.createElement('span');
+    badge.className = 'reste-badge'; badge.textContent = 'Reste';
+    platSelDiv.appendChild(badge);
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.planning-profil-sel')) {
+    document.querySelectorAll('.profil-popup.open').forEach(p => p.classList.remove('open'));
+  }
+});
+
+window.ajouterLigne = async (cle, moment) => {
+  if (!data.planning[cle]) data.planning[cle] = { creneaux: {} };
+  if (!data.planning[cle].creneaux) data.planning[cle].creneaux = {};
+  if (!data.planning[cle].creneaux[moment]) data.planning[cle].creneaux[moment] = [];
+  const nouvelleLigne = { profils:[], platId:'' };
+  data.planning[cle].creneaux[moment].push(nouvelleLigne);
+  await sauvegarder();
+  renderPlanning();
 };
 
-window.effacerCourses = () => { data.liste_courses = {}; sauvegarder(); };
-window.reinitCourses = () => {};
-function renderCourses() { document.getElementById('courses-content').innerHTML = '<div class="empty">Courses synchronisées.</div>'; }
-
-// BACKUPS
-window.exporterJSON = () => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `surlepouce-backup.json`; a.click();
+window.majLigne = async (cle, moment, li, champ, valeur) => {
+  if (!data.planning[cle]) data.planning[cle] = { creneaux: {} };
+  if (!data.planning[cle].creneaux) data.planning[cle].creneaux = {};
+  if (!data.planning[cle].creneaux[moment]) data.planning[cle].creneaux[moment] = [];
+  if (!data.planning[cle].creneaux[moment][li]) {
+    data.planning[cle].creneaux[moment][li] = { platId: '', profils: [] };
+  }
+  data.planning[cle].creneaux[moment][li][champ] = valeur;
+  await sauvegarder();
+  renderPlanning();
 };
-window.importerJSON = async (input) => {
-  const file = input.files[0]; if (!file) return;
+
+window.supprimerLigne = async (cle, moment, li) => {
+  if (!data.planning[cle]?.creneaux?.[moment]) return;
+  data.planning[cle].creneaux[moment].splice(li, 1);
+  await sauvegarder();
+  renderPlanning();
+};
+
+// ===================== COURSES =====================
+window.genererCourses = async () => {
+  const jours = joursDeLaPeriode(semaineOffset);
+  const platsPlanifies = [];
+  const restesUtilises = [];
+
+  jours.forEach(d => {
+    const cle = dateISO(d);
+    const creneaux = (data.planning[cle] || {}).creneaux || {};
+    ['midi','soir'].forEach(m => {
+      (creneaux[m] || []).forEach(ligne => {
+        if (!ligne.platId) return;
+        if (ligne.platId.startsWith('reste:')) {
+          const pid = ligne.platId.replace('reste:','');
+          const p = data.plats.find(x=>x.id===pid);
+          if (p) restesUtilises.push(p.nom);
+        } else {
+          const p = data.plats.find(x=>x.id===ligne.platId);
+          if (p) platsPlanifies.push(p);
+        }
+      });
+    });
+  });
+
+  if (!platsPlanifies.length && !restesUtilises.length) { alert('Aucun repas planifié cette semaine !'); return; }
+
+  showSection('courses', document.querySelectorAll('.nav-item')[2]);
+  document.getElementById('courses-content').innerHTML = '<div class="empty"><span class="loading-dots">Génération en cours</span></div>';
+
+  const prompt = `Tu es un assistant culinaire.
+Plats à cuisiner cette semaine: ${platsPlanifies.map(p=>`${p.nom} (ingrédients: ${(p.ingredients||[]).join(', ')})`).join(' / ')}
+Plats en restes (déjà cuisinés, PAS à racheter): ${restesUtilises.join(', ') || 'aucun'}
+Profils famille: ${JSON.stringify(data.profils.map(p=>({prenom:p.prenom,allergies:p.allergies})))}
+Génère une liste de courses UNIQUEMENT en JSON valide, sans texte avant ni après, sans markdown.
+Format: {"Fruits et légumes":["Tomates x4"],"Viandes et poissons":["Poulet 1kg"],"Épicerie":["Thon x2"],"Produits frais":["Œufs x6"],"Autres":[]}
+IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumule les quantités, respecte les allergies.`;
+
   try {
-    const text = await file.text(); data = JSON.parse(text);
-    await sauvegarder(); renderTout();
-  } catch(e) { alert('Erreur d\'importation.'); }
-  input.value = '';
+    const proxyUrl1 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1000';
+    const r = await fetch(proxyUrl1, {redirect:'follow', credentials:'omit'});
+    const d = await r.json();
+    if (d.quota_depasse) {
+      document.getElementById('courses-content').innerHTML = '<div class="empty">⏳ Quota IA atteint pour aujourd\'hui.<br>Réessaie dans quelques heures.</div>';
+      return;
+    }
+    if (d.error) {
+      document.getElementById('courses-content').innerHTML = '<div class="empty">❌ Erreur IA. Réessaie.</div>';
+      return;
+    }
+    const txt = d.content.map(c=>c.text||'').join('');
+    const courses = JSON.parse(txt.replace(/```json|```/g,'').trim());
+    data.liste_courses = { generee_le: new Date().toISOString().slice(0,10), rayons:{} };
+    Object.keys(courses).forEach(rayon => { if(courses[rayon].length) data.liste_courses.rayons[rayon] = courses[rayon].map(a=>({article:a,coche:false})); });
+    await sauvegarder();
+    renderCourses();
+  } catch(e) {
+    document.getElementById('courses-content').innerHTML = '<div class="empty">❌ Erreur lors de la génération. Réessaie.</div>';
+  }
 };
 
-window.demanderIA = () => { 
-  document.getElementById('ia-zone').style.display = 'block'; 
-  document.getElementById('ia-reponse').textContent = "Voici une suggestion IA basée sur vos plats..."; 
+window.cocherArticle = async (rayon, i, v) => {
+  data.liste_courses.rayons[rayon][i].coche = v;
+  const el = document.getElementById(`ci-${rayon.replace(/\s/g,'_')}-${i}`);
+  if (el) v ? el.classList.add('done') : el.classList.remove('done');
+  await sauvegarder();
 };
 
+window.effacerCourses = async () => {
+  if (!confirm('Effacer toute la liste de courses ?')) return;
+  data.liste_courses = {};
+  await sauvegarder();
+  renderCourses();
+};
+
+window.reinitCourses = async () => {
+  if (!data.liste_courses?.rayons) return;
+  Object.keys(data.liste_courses.rayons).forEach(r => data.liste_courses.rayons[r].forEach(i=>i.coche=false));
+  await sauvegarder(); renderCourses();
+};
+
+function renderCourses() {
+  const el = document.getElementById('courses-content');
+  const r = data.liste_courses?.rayons;
+  if (!r || !Object.keys(r).length) { el.innerHTML = '<div class="empty">Aucune liste générée.</div>'; return; }
+  const icons = {'Fruits et légumes':'ti-plant-2','Viandes et poissons':'ti-fish','Épicerie':'ti-basket','Produits frais':'ti-egg','Autres':'ti-dots'};
+  let html = `<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Générée le ${data.liste_courses.generee_le||'—'}</p>`;
+  Object.keys(r).forEach(rayon => {
+    if (!r[rayon].length) return;
+    html += `<div class="rayon-titre"><i class="ti ${icons[rayon]||'ti-shopping-cart'}"></i>${escapeHtml(rayon)}</div>`;
+    r[rayon].forEach((item,i) => {
+      html += `<div class="checklist-item${item.coche?' done':''}" id="ci-${rayon.replace(/\s/g,'_')}-${i}">
+        <input type="checkbox" ${item.coche?'checked':''} onchange="cocherArticle('${rayon}',${i},this.checked)">
+        <span>${escapeHtml(item.article)}</span>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+// ===================== IA =====================
+function renderIAProfils() {
+  const el = document.getElementById('ia-profils-sel');
+  if (!el) return;
+  el.innerHTML = data.profils.map(p => `
+    <label style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:13px;margin:0">
+      <input type="checkbox" value="${p.id}" style="accent-color:${p.couleur};width:16px;height:16px">
+      <span style="background:${p.couleur}20;color:${p.couleur};padding:2px 8px;border-radius:20px;font-weight:500">${p.emoji} ${escapeHtml(p.prenom)}</span>
+    </label>`).join('');
+}
+
+window.demanderIA = async () => {
+  const profilsIds = [...document.querySelectorAll('#ia-profils-sel input:checked')].map(cb=>cb.value);
+  const profilsConcernes = data.profils.filter(p=>profilsIds.includes(p.id));
+  const zone = document.getElementById('ia-zone');
+  const rep = document.getElementById('ia-reponse');
+  zone.style.display = 'block';
+  rep.innerHTML = '<span class="loading-dots">L\'IA réfléchit</span>';
+  document.getElementById('ia-actions').style.display = 'none';
+  document.getElementById('ia-actions').innerHTML = '';
+  const types = {
+    suggestion:"Propose 4 idées de plats en t'inspirant des habitudes culinaires de cette famille.",
+    declinaison:"Propose 3 déclinaisons originales de plats déjà dans leur bibliothèque.",
+    croisement:"Propose 2 croisements créatifs entre leurs plats existants.",
+    nouveau:"Propose 3 plats qu'ils n'ont jamais faits mais qui correspondent à leur style."
+  };
+  const prompt = `Tu es un assistant culinaire personnel.
+Profils concernés: ${JSON.stringify(profilsConcernes.map(p=>({prenom:p.prenom,preferences:p.preferences,allergies:p.allergies})))}
+Bibliothèque de plats: ${JSON.stringify(data.plats.map(p=>({nom:p.nom,temps:p.temps,ingredients:p.ingredients})))}
+Contrainte temps: ${document.getElementById('ia-temps').value}
+Envie: ${document.getElementById('ia-envie').value||'aucune'}
+Mission: ${types[document.getElementById('ia-type').value]}
+IMPORTANT: Réponds UNIQUEMENT avec un tableau JSON valide, sans texte avant ni après, sans balises markdown.
+Format exact: [{"nom":"Nom du plat","temps":"rapide","ingredients":["ingr1","ingr2"],"description":"Description appétissante en 1-2 phrases."}]
+Le champ temps doit être soit "rapide" soit "normal". Respecte absolument les préférences et allergies.`;
+  try {
+    const proxyUrl2 = 'https://script.google.com/macros/s/AKfycbw5nRCWY88JOiL68etgqyiA1fHiMth3yU4alCkcIdXPMzbom226_DW7e7Ej48cN1y8Y8w/exec?prompt=' + encodeURIComponent(prompt) + '&max_tokens=1500';
+    const r = await fetch(proxyUrl2, {redirect:'follow', credentials:'omit'});
+    const d = await r.json();
+    if (d.quota_depasse) { rep.textContent = '⏳ Quota IA atteint pour aujourd\'hui. Réessaie dans quelques heures.'; return; }
+    if (d.error) { rep.textContent = '❌ Erreur IA : ' + d.error; return; }
+    const txt = d.content.map(c=>c.text||'').join('');
+    let plats = [];
+    try { plats = JSON.parse(txt.replace(/```json|```/g,'').trim()); } catch(e) { rep.textContent = txt; return; }
+    
+    rep.textContent = plats.map((p,i) => `${i+1}. ${p.nom} (${p.temps})\n   ${p.description}`).join('\n\n');
+    
+    window._platsIA = window._platsIA || {};
+    const cartesHtml = plats.map((p, idx) => {
+      const ingrStr = (p.ingredients||[]).join(', ');
+      window._platsIA[idx] = {nom:p.nom, temps:p.temps, ingredients:ingrStr, description:p.description||'', profils:profilsIds};
+      return `<div style="background:var(--surface-1);border:1px solid var(--border);border-radius:8px;margin-top:6px;padding:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${escapeHtml(p.nom)} <span style="font-size:11px;color:var(--text-muted);font-weight:400">(${escapeHtml(p.temps)})</span></div>
+            ${ingrStr ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px">${escapeHtml(ingrStr)}</div>` : ''}
+            ${p.description ? `<div style="font-size:12px;color:var(--text-secondary);margin-top:4px;font-style:italic">${escapeHtml(p.description)}</div>` : ''}
+          </div>
+          <button onclick="ajouterPlatIAIdx(${idx}, this)" style="padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #5DCAA5;background:#E1F5EE;color:var(--green-dark);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit"><i class="ti ti-plus"></i> Ajouter</button>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('ia-actions').innerHTML = cartesHtml;
+    document.getElementById('ia-actions').style.display = 'flex';
+    document.getElementById('ia-actions').style.flexDirection = 'column';
+  } catch(e) { rep.textContent = '❌ Erreur de connexion. Réessaie.'; }
+};
+
+window.ajouterDepuisIA = async () => {
+  const nom = prompt('Nom du plat à ajouter dans "Plats découverts" :');
+  if (!nom) return;
+  data.plats.push({id:'p_'+Date.now(),nom:nom.trim(),temps:'normal',moment:'tous',ingredients:[],notes:'Suggéré par l\'IA',categorie:'plats_decouverts',profils:[]});
+  await sauvegarder();
+  alert(`"${nom}" ajouté à tes plats découverts !`);
+};
+
+window.ajouterPlatIAIdx = async (idx, btnEl) => {
+  const p = window._platsIA && window._platsIA[idx];
+  if (!p) return;
+  
+  if (data.plats.find(x=>x.nom.toLowerCase()===p.nom.toLowerCase())) {
+    alert(`"${p.nom}" est déjà dans ta bibliothèque !`);
+    return;
+  }
+  data.plats.push({
+    id:'p_'+Date.now(),
+    nom:p.nom.trim(),
+    temps:p.temps||'normal',
+    moment:'tous',
+    ingredients: p.ingredients ? p.ingredients.split(',').map(x=>x.trim()).filter(Boolean) : [],
+    notes: p.description || 'Suggéré par l\'IA',
+    categorie:'plats_decouverts',
+    profils: Array.isArray(p.profils) ? p.profils : []
+  });
+  await sauvegarder();
+  
+  if (btnEl) { 
+    btnEl.textContent = '✓ Ajouté'; 
+    btnEl.disabled = true; 
+    btnEl.style.background = '#E1F5EE'; 
+    btnEl.style.color = 'var(--green-dark)'; 
+  }
+};
+
+// ===================== MODALS =====================
 window.fermerModal = (id) => document.getElementById(id).style.display = 'none';
 window.fermerModalSiOverlay = (e, id) => { if(e.target===document.getElementById(id)) fermerModal(id); };
+window.selColor = (el) => {
+  document.querySelectorAll('.color-option[data-color]').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected'); colorSelectionnee = el.dataset.color;
+};
+window.selEmoji = (el) => {
+  document.querySelectorAll('#emoji-picker span').forEach(e => e.style.borderColor = 'transparent');
+  el.style.borderColor = '#1a1a1a'; emojiSelectionne = el.dataset.emoji;
+};
 </script>
 </body>
 </html>
