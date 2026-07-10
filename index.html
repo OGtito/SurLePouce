@@ -289,7 +289,7 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <div class="param-section">
       <h3>Informations</h3>
-      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v2.0</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v2.1</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
@@ -749,6 +749,10 @@ window.filtrerPlats = (f, btn) => {
   renderPlats();
 };
 
+function trierParNom(arr) {
+  return [...arr].sort((a,b) => a.nom.localeCompare(b.nom, 'fr', {sensitivity:'base'}));
+}
+
 function renderPlats() {
   const el = document.getElementById('liste-plats');
   document.getElementById('b-tous').textContent = data.plats.length;
@@ -759,6 +763,7 @@ function renderPlats() {
   if (filtreActuel==='rapide') plats = plats.filter(p=>p.temps==='rapide');
   else if (filtreActuel==='normal') plats = plats.filter(p=>p.temps==='normal');
   else if (filtreActuel==='decouvert') plats = plats.filter(p=>p.categorie==='plats_decouverts');
+  plats = trierParNom(plats);
   if (!plats.length) { el.innerHTML = '<div class="empty">Aucun plat trouvé.</div>'; return; }
   el.innerHTML = plats.map(p => {
     const badges = (p.profils||[]).map(pid => {
@@ -824,9 +829,9 @@ function restesDisponibles(dateCleActuelle) {
 }
 
 function optsPlat(dateCle) {
-  const restes = restesDisponibles(dateCle);
+  const restes = trierParNom(restesDisponibles(dateCle));
   let html = '<option value="">— Choisir —</option><optgroup label="🍽️ Plats">';
-  data.plats.forEach(p => { html += `<option value="${p.id}">${escapeHtml(p.nom)}</option>`; });
+  trierParNom(data.plats).forEach(p => { html += `<option value="${p.id}">${escapeHtml(p.nom)}</option>`; });
   html += '</optgroup>';
   if (restes.length) {
     html += '<optgroup label="♻️ Restes">';
