@@ -185,7 +185,21 @@ textarea{min-height:70px;resize:vertical}
       <h2 style="margin:0">Liste de courses</h2>
       <div style="display:flex;gap:6px">
         <button class="btn btn-sm" onclick="reinitCourses()"><i class="ti ti-refresh"></i> Tout décocher</button>
-        <button class="btn btn-sm btn-danger" onclick="effacerCourses()"><i class="ti ti-trash"></i> Effacer</button>
+        <button id="btn-effacer-courses" class="btn btn-sm btn-danger" onclick="effacerCourses()"><i class="ti ti-trash"></i> Effacer</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;padding:10px">
+      <div class="flex">
+        <select id="ajout-rayon" style="flex:0 0 150px">
+          <option value="Fruits et légumes">Fruits et légumes</option>
+          <option value="Viandes et poissons">Viandes et poissons</option>
+          <option value="Épicerie">Épicerie</option>
+          <option value="Produits frais">Produits frais</option>
+          <option value="Maison et hygiène">Maison et hygiène</option>
+          <option value="Autres">Autres</option>
+        </select>
+        <input type="text" id="ajout-article" placeholder="Ex: Piles AA, papier toilette..." onkeydown="if(event.key==='Enter')ajouterArticleManuel()">
+        <button class="btn btn-primary btn-sm" onclick="ajouterArticleManuel()"><i class="ti ti-plus"></i></button>
       </div>
     </div>
     <div id="courses-content"><div class="empty">Aucune liste générée.<br>Remplis le planning puis génère la liste.</div></div>
@@ -275,7 +289,7 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <div class="param-section">
       <h3>Informations</h3>
-      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v1.2</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v2.0</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
@@ -1020,6 +1034,28 @@ window.supprimerLigne = async (cle, moment, li) => {
 };
 
 // ===================== COURSES =====================
+// Fusionne une nouvelle liste générée par l'IA avec les articles non cochés déjà présents
+// (au lieu d'écraser la liste existante). Les articles déjà cochés (achetés) d'une génération
+// précédente sont abandonnés ici : ils ont normalement déjà été retirés via "Effacer".
+// Dédoublonnage insensible à la casse, par rayon.
+function fusionnerCourses(nouveauxRayons) {
+  const existants = data.liste_courses?.rayons || {};
+  const resultat = {};
+  Object.keys(existants).forEach(rayon => {
+    const nonCoches = (existants[rayon] || []).filter(it => !it.coche).map(it => ({...it}));
+    if (nonCoches.length) resultat[rayon] = nonCoches;
+  });
+  Object.keys(nouveauxRayons).forEach(rayon => {
+    if (!nouveauxRayons[rayon] || !nouveauxRayons[rayon].length) return;
+    if (!resultat[rayon]) resultat[rayon] = [];
+    nouveauxRayons[rayon].forEach(article => {
+      const dejaPresent = resultat[rayon].some(it => it.article.trim().toLowerCase() === String(article).trim().toLowerCase());
+      if (!dejaPresent) resultat[rayon].push({ article, coche:false });
+    });
+  });
+  return resultat;
+}
+
 window.genererCourses = async () => {
   const jours = joursDeLaPeriode(semaineOffset);
   const platsPlanifies = [];
@@ -1068,8 +1104,9 @@ IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumu
     }
     const txt = d.content.map(c=>c.text||'').join('');
     const courses = JSON.parse(txt.replace(/```json|```/g,'').trim());
-    data.liste_courses = { generee_le: dateISO(new Date()), rayons:{} };
-    Object.keys(courses).forEach(rayon => { if(courses[rayon].length) data.liste_courses.rayons[rayon] = courses[rayon].map(a=>({article:a,coche:false})); });
+    const nouveauxRayons = {};
+    Object.keys(courses).forEach(rayon => { if (courses[rayon] && courses[rayon].length) nouveauxRayons[rayon] = courses[rayon]; });
+    data.liste_courses = { generee_le: dateISO(new Date()), rayons: fusionnerCourses(nouveauxRayons) };
     await sauvegarder();
     renderCourses();
   } catch(e) {
@@ -1084,11 +1121,48 @@ window.cocherArticle = async (rayon, i, v) => {
   await sauvegarder();
 };
 
-window.effacerCourses = async () => {
-  if (!confirm('Effacer toute la liste de courses ?')) return;
-  data.liste_courses = {};
+window.ajouterArticleManuel = async () => {
+  const rayon = document.getElementById('ajout-rayon').value;
+  const input = document.getElementById('ajout-article');
+  const texte = input.value.trim();
+  if (!texte) return;
+  if (!data.liste_courses) data.liste_courses = { generee_le: dateISO(new Date()), rayons:{} };
+  if (!data.liste_courses.rayons) data.liste_courses.rayons = {};
+  if (!data.liste_courses.rayons[rayon]) data.liste_courses.rayons[rayon] = [];
+  data.liste_courses.rayons[rayon].push({ article: texte, coche:false });
+  input.value = '';
   await sauvegarder();
   renderCourses();
+};
+
+window.supprimerArticle = async (rayon, i) => {
+  if (!data.liste_courses?.rayons?.[rayon]) return;
+  data.liste_courses.rayons[rayon].splice(i, 1);
+  if (!data.liste_courses.rayons[rayon].length) delete data.liste_courses.rayons[rayon];
+  await sauvegarder();
+  renderCourses();
+};
+
+// "Effacer" en deux temps : s'il reste des articles cochés, ne retire que ceux-là (les non cochés
+// restent disponibles pour la prochaine fois). S'il n'y a plus rien de coché, un clic supplémentaire
+// vide entièrement la liste (avec confirmation).
+window.effacerCourses = async () => {
+  const r = data.liste_courses?.rayons;
+  if (!r || !Object.keys(r).length) return;
+  const aDesArticlesCoches = Object.values(r).some(liste => liste.some(it => it.coche));
+  if (aDesArticlesCoches) {
+    Object.keys(r).forEach(rayon => {
+      r[rayon] = r[rayon].filter(it => !it.coche);
+      if (!r[rayon].length) delete r[rayon];
+    });
+    await sauvegarder();
+    renderCourses();
+  } else {
+    if (!confirm('Plus aucun article coché : vider complètement la liste (y compris les articles non cochés) ?')) return;
+    data.liste_courses = {};
+    await sauvegarder();
+    renderCourses();
+  }
 };
 
 window.reinitCourses = async () => {
@@ -1100,8 +1174,15 @@ window.reinitCourses = async () => {
 function renderCourses() {
   const el = document.getElementById('courses-content');
   const r = data.liste_courses?.rayons;
-  if (!r || !Object.keys(r).length) { el.innerHTML = '<div class="empty">Aucune liste générée.</div>'; return; }
-  const icons = {'Fruits et légumes':'ti-plant-2','Viandes et poissons':'ti-fish','Épicerie':'ti-basket','Produits frais':'ti-egg','Autres':'ti-dots'};
+  const btnEffacer = document.getElementById('btn-effacer-courses');
+  if (!r || !Object.keys(r).length) {
+    el.innerHTML = '<div class="empty">Aucune liste générée.</div>';
+    if (btnEffacer) btnEffacer.title = '';
+    return;
+  }
+  const aDesArticlesCoches = Object.values(r).some(liste => liste.some(it => it.coche));
+  if (btnEffacer) btnEffacer.title = aDesArticlesCoches ? 'Retire les articles cochés' : 'Vide toute la liste (rien de coché)';
+  const icons = {'Fruits et légumes':'ti-plant-2','Viandes et poissons':'ti-fish','Épicerie':'ti-basket','Produits frais':'ti-egg','Maison et hygiène':'ti-spray','Autres':'ti-dots'};
   let html = `<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Générée le ${data.liste_courses.generee_le||'—'}</p>`;
   Object.keys(r).forEach(rayon => {
     if (!r[rayon].length) return;
@@ -1109,7 +1190,8 @@ function renderCourses() {
     r[rayon].forEach((item,i) => {
       html += `<div class="checklist-item${item.coche?' done':''}" id="ci-${rayon.replace(/\s/g,'_')}-${i}">
         <input type="checkbox" ${item.coche?'checked':''} onchange="cocherArticle('${rayon}',${i},this.checked)">
-        <span>${escapeHtml(item.article)}</span>
+        <span style="flex:1">${escapeHtml(item.article)}</span>
+        <button class="btn-icon del" style="flex-shrink:0" onclick="supprimerArticle('${rayon}',${i})" title="Retirer cet article"><i class="ti ti-x"></i></button>
       </div>`;
     });
   });
