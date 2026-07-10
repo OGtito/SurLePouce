@@ -1114,10 +1114,20 @@ IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumu
   }
 };
 
+function majTitreBoutonEffacer() {
+  const btnEffacer = document.getElementById('btn-effacer-courses');
+  if (!btnEffacer) return;
+  const r = data.liste_courses?.rayons;
+  if (!r || !Object.keys(r).length) { btnEffacer.title = ''; return; }
+  const aDesArticlesCoches = Object.values(r).some(liste => liste.some(it => it.coche));
+  btnEffacer.title = aDesArticlesCoches ? 'Retire les articles cochés' : 'Vide toute la liste (rien de coché)';
+}
+
 window.cocherArticle = async (rayon, i, v) => {
   data.liste_courses.rayons[rayon][i].coche = v;
   const el = document.getElementById(`ci-${rayon.replace(/\s/g,'_')}-${i}`);
   if (el) v ? el.classList.add('done') : el.classList.remove('done');
+  majTitreBoutonEffacer();
   await sauvegarder();
 };
 
@@ -1174,14 +1184,11 @@ window.reinitCourses = async () => {
 function renderCourses() {
   const el = document.getElementById('courses-content');
   const r = data.liste_courses?.rayons;
-  const btnEffacer = document.getElementById('btn-effacer-courses');
+  majTitreBoutonEffacer();
   if (!r || !Object.keys(r).length) {
     el.innerHTML = '<div class="empty">Aucune liste générée.</div>';
-    if (btnEffacer) btnEffacer.title = '';
     return;
   }
-  const aDesArticlesCoches = Object.values(r).some(liste => liste.some(it => it.coche));
-  if (btnEffacer) btnEffacer.title = aDesArticlesCoches ? 'Retire les articles cochés' : 'Vide toute la liste (rien de coché)';
   const icons = {'Fruits et légumes':'ti-plant-2','Viandes et poissons':'ti-fish','Épicerie':'ti-basket','Produits frais':'ti-egg','Maison et hygiène':'ti-spray','Autres':'ti-dots'};
   let html = `<p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Générée le ${data.liste_courses.generee_le||'—'}</p>`;
   Object.keys(r).forEach(rayon => {
