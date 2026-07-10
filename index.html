@@ -103,6 +103,9 @@ textarea{min-height:70px;resize:vertical}
 .loading-dots::after{content:'...';animation:dots 1.5s infinite}
 @keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
 .profil-card{background:white;border:2px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.profil-card.dragging{opacity:.5;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.drag-handle{cursor:grab;touch-action:none;padding:4px 6px;color:var(--text-muted);flex-shrink:0;font-size:18px;-webkit-user-select:none;user-select:none}
+.drag-handle:active{cursor:grabbing}
 .profil-color-box{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px}
 .profil-nom{font-weight:600;font-size:15px}
 .profil-details{font-size:12px;color:var(--text-muted);margin-top:2px}
@@ -289,7 +292,7 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <div class="param-section">
       <h3>Informations</h3>
-      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v2.1</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v2.2</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
@@ -675,17 +678,62 @@ function renderProfils() {
   const el = document.getElementById('liste-profils');
   if (!data.profils.length) { el.innerHTML = '<div class="empty">Aucun profil.<br>Ajoute les membres de la famille !</div>'; return; }
   el.innerHTML = data.profils.map(p => `
-    <div class="profil-card">
+    <div class="profil-card" data-id="${p.id}">
       <div class="profil-color-box" style="background:${p.couleur}20;color:${p.couleur}">${p.emoji}</div>
       <div style="flex:1">
         <div class="profil-nom" style="color:${p.couleur}">${escapeHtml(p.prenom)}</div>
         <div class="profil-details">Légumes cuits : ${p.preferences?.legumes_cuits?'✓':'✗'} · ${(p.allergies||[]).length?'Évite : '+escapeHtml(p.allergies.join(', ')):'Aucune allergie'}</div>
       </div>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;align-items:center">
         <button class="btn btn-sm" onclick="ouvrirModalProfil('${p.id}')"><i class="ti ti-edit"></i></button>
         <button class="btn btn-sm btn-danger" onclick="supprimerProfil('${p.id}')"><i class="ti ti-trash"></i></button>
+        <div class="drag-handle" onpointerdown="demarrerDragProfil(event)"><i class="ti ti-grip-vertical"></i></div>
       </div>
     </div>`).join('');
+}
+
+// ===================== GLISSÉ-DÉPOSÉ DES PROFILS =====================
+// Pointer Events plutôt que l'API HTML5 draggable : cette dernière ne fonctionne quasiment
+// pas au tactile (mobile), alors que Pointer Events gère uniformément souris et doigt.
+let _dragProfilEl = null;
+
+window.demarrerDragProfil = (e) => {
+  e.preventDefault();
+  const container = document.getElementById('liste-profils');
+  _dragProfilEl = e.currentTarget.closest('.profil-card');
+  if (!_dragProfilEl) return;
+  _dragProfilEl.classList.add('dragging');
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch(err) {}
+  document.addEventListener('pointermove', deplacerDragProfil);
+  document.addEventListener('pointerup', terminerDragProfil);
+  document.addEventListener('pointercancel', terminerDragProfil);
+};
+
+function deplacerDragProfil(e) {
+  if (!_dragProfilEl) return;
+  const container = document.getElementById('liste-profils');
+  const y = e.clientY;
+  const autres = [...container.querySelectorAll('.profil-card:not(.dragging)')];
+  let placeAvant = null;
+  for (const sib of autres) {
+    const rect = sib.getBoundingClientRect();
+    if (y < rect.top + rect.height / 2) { placeAvant = sib; break; }
+  }
+  if (placeAvant) container.insertBefore(_dragProfilEl, placeAvant);
+  else container.appendChild(_dragProfilEl);
+}
+
+async function terminerDragProfil() {
+  document.removeEventListener('pointermove', deplacerDragProfil);
+  document.removeEventListener('pointerup', terminerDragProfil);
+  document.removeEventListener('pointercancel', terminerDragProfil);
+  if (!_dragProfilEl) return;
+  _dragProfilEl.classList.remove('dragging');
+  const container = document.getElementById('liste-profils');
+  const nouvelOrdre = [...container.querySelectorAll('.profil-card')].map(el => el.dataset.id);
+  data.profils = nouvelOrdre.map(id => data.profils.find(p => p.id === id)).filter(Boolean);
+  _dragProfilEl = null;
+  await sauvegarder();
 }
 
 // ===================== PLATS =====================
