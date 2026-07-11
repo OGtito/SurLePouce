@@ -302,7 +302,7 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <div class="param-section">
       <h3>Informations</h3>
-      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v3.0</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v3.1</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
@@ -690,7 +690,7 @@ function optionsLegumes(valeurActuelle) {
 
 // Gère la sélection "+ Ajouter un nouveau légume..." sur un <select> de légume : demande le nom,
 // l'ajoute durablement à la liste, puis resélectionne ce nouveau légume dans le <select> concerné.
-async function gererChoixLegume(selectEl, onValeurChoisie) {
+window.gererChoixLegume = async function(selectEl, onValeurChoisie) {
   if (selectEl.value === '__nouveau__') {
     const nom = prompt('Nom du nouveau légume :');
     if (!nom || !nom.trim()) { selectEl.value = ''; return; }
@@ -1110,13 +1110,15 @@ function renderLigne(cle, moment, ligne, li) {
   };
   platSelDiv.appendChild(platSel);
 
-  // Sélecteur de légume modifiable : n'apparaît que si le plat choisi a un légume par défaut défini,
-  // et jamais sur une ligne "reste" (le plat est déjà cuisiné, le légume est déjà fixé).
+  // Sélecteur de légume modifiable : apparaît si le plat choisi (ou le plat d'origine, s'il s'agit
+  // d'un reste) a un légume par défaut défini. Une réchauffe peut très bien être accompagnée d'un
+  // légume différent de la première fois.
   const legumeSelDiv = document.createElement('div');
   legumeSelDiv.className = 'planning-legume-sel';
   const platActuelId = ligne?.platId || '';
-  if (platActuelId && !platActuelId.startsWith('reste:')) {
-    const platActuel = data.plats.find(x => x.id === platActuelId);
+  if (platActuelId) {
+    const pidReel = platActuelId.startsWith('reste:') ? platActuelId.replace('reste:','') : platActuelId;
+    const platActuel = data.plats.find(x => x.id === pidReel);
     if (platActuel && platActuel.legume_defaut) {
       const legumeSel = document.createElement('select');
       legumeSel.title = "Légume d'accompagnement pour ce repas";
