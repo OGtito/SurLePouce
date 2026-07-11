@@ -85,6 +85,7 @@ textarea{min-height:70px;resize:vertical}
 .profil-badge-opt{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;border:1.5px solid transparent;transition:all .1s;white-space:nowrap}
 .profil-badge-opt.sel{border-width:1.5px}
 .planning-plat-sel{flex:1;min-width:0}
+.planning-legume-sel{flex-shrink:0}
 .planning-plat-sel select{padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:6px;width:100%}
 .planning-ligne-btns{display:flex;gap:4px;flex-shrink:0}
 .btn-icon{padding:4px 7px;font-size:13px;border-radius:6px;border:1px solid var(--border);background:white;cursor:pointer;display:inline-flex;align-items:center;color:var(--text-secondary)}
@@ -273,6 +274,15 @@ textarea{min-height:70px;resize:vertical}
       </div>
     </div>
     <div class="param-section">
+      <h3>Légumes</h3>
+      <div class="param-desc" style="margin-bottom:10px">Liste des légumes proposés comme accompagnement modifiable pour un plat. S'enrichit aussi automatiquement quand tu tapes un nouveau légume via "Autre".</div>
+      <div class="flex" style="margin-bottom:10px">
+        <input type="text" id="ajout-legume" placeholder="Ajouter un légume..." onkeydown="if(event.key==='Enter')ajouterLegumeDepuisReglages()">
+        <button class="btn btn-primary btn-sm" onclick="ajouterLegumeDepuisReglages()"><i class="ti ti-plus"></i></button>
+      </div>
+      <div id="liste-legumes-param"></div>
+    </div>
+    <div class="param-section">
       <h3>Planning</h3>
       <div class="param-row">
         <div class="param-info">
@@ -292,7 +302,7 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <div class="param-section">
       <h3>Informations</h3>
-      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v2.2</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v3.0</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
@@ -338,6 +348,8 @@ textarea{min-height:70px;resize:vertical}
     </select>
     <label>Ingrédients principaux (séparés par des virgules)</label>
     <input type="text" id="f-ingredients" placeholder="Ex: thon, tomates, œufs, olives">
+    <label>Légume d'accompagnement <span style="font-weight:400;color:var(--text-muted)">(modifiable à chaque planification)</span></label>
+    <select id="f-legume" onchange="gererChoixLegume(this, () => {})"></select>
     <label>Profils compatibles</label>
     <div id="f-profils-check" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
     <label>Notes / variantes</label>
@@ -413,7 +425,9 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const EMAILS_AUTORISES = ['24.24oliviergsm@gmail.com','24.24cecilegsm@gmail.com'];
 
-let data = { profils:[], plats:[], planning:{}, liste_courses:{}, parametres:{} };
+const LEGUMES_PAR_DEFAUT = ['Carottes','Petits pois','Épinards','Haricots verts','Brocolis','Courgettes','Choux de Bruxelles','Chou-fleur','Navets','Potiron','Betteraves','Fenouil','Aubergines','Artichauts'];
+
+let data = { profils:[], plats:[], planning:{}, liste_courses:{}, parametres:{}, legumes: [...LEGUMES_PAR_DEFAUT] };
 let filtreActuel = 'tous';
 let semaineOffset = 0;
 let colorSelectionnee = '#1D9E75';
@@ -545,6 +559,7 @@ async function chargerDonnees() {
     data.planning = migrerPlanningSiBesoin(incoming.planning || {});
     data.liste_courses = incoming.liste_courses || {};
     data.parametres = incoming.parametres || {};
+    data.legumes = (incoming.legumes && incoming.legumes.length) ? incoming.legumes : [...LEGUMES_PAR_DEFAUT];
     renderTout();
   });
 }
@@ -564,6 +579,7 @@ function renderTout() {
   renderIAProfils();
   renderParamStats();
   chargerPremierJour();
+  renderLegumesParam();
 }
 
 // ===================== NAVIGATION =====================
@@ -608,6 +624,7 @@ window.importerJSON = async (input) => {
     if (!imported.plats || !imported.profils) { alert('Fichier JSON invalide.'); return; }
     imported.planning = migrerPlanningSiBesoin(imported.planning || {});
     imported.parametres = imported.parametres || {};
+    imported.legumes = (imported.legumes && imported.legumes.length) ? imported.legumes : [...LEGUMES_PAR_DEFAUT];
     imported.liste_courses = imported.liste_courses || {};
     data = imported;
     await sauvegarder();
@@ -620,6 +637,69 @@ window.importerJSON = async (input) => {
 function renderParamStats() {
   document.getElementById('param-nb-plats').textContent = `${data.plats.length} plat(s) enregistré(s)`;
   document.getElementById('param-nb-profils').textContent = `${data.profils.length} profil(s) configuré(s)`;
+}
+
+// ===================== LÉGUMES =====================
+// Ajoute un légume s'il n'existe pas déjà (comparaison insensible à la casse/espaces).
+// Retourne le nom "canonique" tel qu'il figure désormais dans la liste (existant ou nouvellement ajouté).
+async function ajouterLegumeSiNouveau(nomBrut) {
+  const nom = (nomBrut || '').trim();
+  if (!nom) return null;
+  if (!data.legumes) data.legumes = [];
+  const existant = data.legumes.find(l => l.trim().toLowerCase() === nom.toLowerCase());
+  if (existant) return existant;
+  data.legumes.push(nom);
+  await sauvegarder();
+  return nom;
+}
+
+window.ajouterLegumeDepuisReglages = async () => {
+  const input = document.getElementById('ajout-legume');
+  const nom = input.value.trim();
+  if (!nom) return;
+  await ajouterLegumeSiNouveau(nom);
+  input.value = '';
+  renderLegumesParam();
+};
+
+window.supprimerLegume = async (index) => {
+  data.legumes.splice(index, 1);
+  await sauvegarder();
+  renderLegumesParam();
+};
+
+function renderLegumesParam() {
+  const el = document.getElementById('liste-legumes-param');
+  if (!el) return;
+  const legumes = trierParNom((data.legumes || []).map(l => ({nom:l})));
+  if (!legumes.length) { el.innerHTML = '<div class="empty" style="padding:1rem">Aucun légume dans la liste.</div>'; return; }
+  el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px">${legumes.map(l => {
+    const indexReel = data.legumes.indexOf(l.nom);
+    return `<span class="tag" style="background:var(--surface-1);color:var(--text-secondary);gap:6px">${escapeHtml(l.nom)}<i class="ti ti-x" style="cursor:pointer" onclick="supprimerLegume(${indexReel})"></i></span>`;
+  }).join('')}</div>`;
+}
+
+// Construit les <option> d'un sélecteur de légume, avec une entrée finale "+ Ajouter un nouveau légume..."
+function optionsLegumes(valeurActuelle) {
+  const legumes = trierParNom((data.legumes || []).map(l => ({nom:l})));
+  let html = '<option value="">— Aucun —</option>';
+  legumes.forEach(l => { html += `<option value="${escapeHtml(l.nom)}"${l.nom===valeurActuelle?' selected':''}>${escapeHtml(l.nom)}</option>`; });
+  html += '<option value="__nouveau__">+ Ajouter un nouveau légume…</option>';
+  return html;
+}
+
+// Gère la sélection "+ Ajouter un nouveau légume..." sur un <select> de légume : demande le nom,
+// l'ajoute durablement à la liste, puis resélectionne ce nouveau légume dans le <select> concerné.
+async function gererChoixLegume(selectEl, onValeurChoisie) {
+  if (selectEl.value === '__nouveau__') {
+    const nom = prompt('Nom du nouveau légume :');
+    if (!nom || !nom.trim()) { selectEl.value = ''; return; }
+    const canonique = await ajouterLegumeSiNouveau(nom);
+    selectEl.innerHTML = optionsLegumes(canonique);
+    onValeurChoisie(canonique);
+  } else {
+    onValeurChoisie(selectEl.value);
+  }
 }
 
 // ===================== PROFILS =====================
@@ -754,10 +834,12 @@ window.ouvrirModalPlat = (id) => {
       document.getElementById('f-moment').value = pl.moment;
       document.getElementById('f-ingredients').value = (pl.ingredients||[]).join(', ');
       document.getElementById('f-notes').value = pl.notes || '';
+      document.getElementById('f-legume').innerHTML = optionsLegumes(pl.legume_defaut || '');
       checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => { cb.checked = (pl.profils||[]).includes(cb.value); });
     }
   } else {
     ['f-nom','f-ingredients','f-notes'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('f-legume').innerHTML = optionsLegumes('');
     checkContainer.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
   }
   document.getElementById('modal-plat').style.display = 'flex';
@@ -775,6 +857,7 @@ window.sauvegarderPlat = async () => {
     moment: document.getElementById('f-moment').value,
     ingredients: document.getElementById('f-ingredients').value.split(',').map(x=>x.trim()).filter(Boolean),
     notes: document.getElementById('f-notes').value,
+    legume_defaut: document.getElementById('f-legume').value || '',
     profils,
     categorie: existant?.categorie || 'plats_maison'
   };
@@ -1011,8 +1094,39 @@ function renderLigne(cle, moment, ligne, li) {
   platSelDiv.className = 'planning-plat-sel';
   const platSel = document.createElement('select');
   platSel.innerHTML = optsPlat(cle);
-  platSel.onchange = (e) => majLigne(cle, moment, li, 'platId', e.target.value);
+  platSel.onchange = async (e) => {
+    const nouveauPlatId = e.target.value;
+    if (!data.planning[cle]) data.planning[cle] = { creneaux: {} };
+    if (!data.planning[cle].creneaux) data.planning[cle].creneaux = {};
+    if (!data.planning[cle].creneaux[moment]) data.planning[cle].creneaux[moment] = [];
+    if (!data.planning[cle].creneaux[moment][li]) {
+      data.planning[cle].creneaux[moment][li] = { platId:'', profils: [...profilsSelIds] };
+    }
+    data.planning[cle].creneaux[moment][li].platId = nouveauPlatId;
+    // Le plat change : le légume choisi précédemment ne correspond plus forcément, on repart du légume par défaut du nouveau plat.
+    delete data.planning[cle].creneaux[moment][li].legumeChoisi;
+    await sauvegarder();
+    renderPlanning();
+  };
   platSelDiv.appendChild(platSel);
+
+  // Sélecteur de légume modifiable : n'apparaît que si le plat choisi a un légume par défaut défini,
+  // et jamais sur une ligne "reste" (le plat est déjà cuisiné, le légume est déjà fixé).
+  const legumeSelDiv = document.createElement('div');
+  legumeSelDiv.className = 'planning-legume-sel';
+  const platActuelId = ligne?.platId || '';
+  if (platActuelId && !platActuelId.startsWith('reste:')) {
+    const platActuel = data.plats.find(x => x.id === platActuelId);
+    if (platActuel && platActuel.legume_defaut) {
+      const legumeSel = document.createElement('select');
+      legumeSel.title = "Légume d'accompagnement pour ce repas";
+      legumeSel.style.cssText = 'padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:6px;max-width:130px';
+      const valeurActuelle = ligne?.legumeChoisi || platActuel.legume_defaut;
+      legumeSel.innerHTML = optionsLegumes(valeurActuelle);
+      legumeSel.onchange = () => gererChoixLegume(legumeSel, (val) => majLigne(cle, moment, li, 'legumeChoisi', val));
+      legumeSelDiv.appendChild(legumeSel);
+    }
+  }
 
   const resteBtn = document.createElement('button');
   const aReste = ligne?.aReste || false;
@@ -1039,6 +1153,7 @@ function renderLigne(cle, moment, ligne, li) {
 
   div.appendChild(profilSelDiv);
   div.appendChild(platSelDiv);
+  div.appendChild(legumeSelDiv);
   div.appendChild(resteBtn);
   div.appendChild(btnsDiv);
   container.appendChild(div);
@@ -1111,7 +1226,7 @@ function fusionnerCourses(nouveauxRayons) {
 
 window.genererCourses = async () => {
   const jours = joursDeLaPeriode(semaineOffset);
-  const platsPlanifies = [];
+  const platsPlanifies = []; // { nom, ingredients, legume }
   const restesUtilises = [];
 
   jours.forEach(d => {
@@ -1126,7 +1241,11 @@ window.genererCourses = async () => {
           if (p) restesUtilises.push(p.nom);
         } else {
           const p = data.plats.find(x=>x.id===ligne.platId);
-          if (p) platsPlanifies.push(p);
+          if (p) {
+            // Le légume réellement retenu pour CE repas prime sur celui écrit par défaut sur la fiche du plat.
+            const legume = ligne.legumeChoisi || p.legume_defaut || '';
+            platsPlanifies.push({ nom: p.nom, ingredients: p.ingredients||[], legume });
+          }
         }
       });
     });
@@ -1138,12 +1257,12 @@ window.genererCourses = async () => {
   document.getElementById('courses-content').innerHTML = '<div class="empty"><span class="loading-dots">Génération en cours</span></div>';
 
   const prompt = `Tu es un assistant culinaire.
-Plats à cuisiner cette semaine: ${platsPlanifies.map(p=>`${p.nom} (ingrédients: ${(p.ingredients||[]).join(', ')})`).join(' / ')}
+Plats à cuisiner cette semaine: ${platsPlanifies.map(p=>`${p.nom} (ingrédients: ${p.ingredients.join(', ')}${p.legume ? ', légume d\'accompagnement pour ce repas : '+p.legume : ''})`).join(' / ')}
 Plats en restes (déjà cuisinés, PAS à racheter): ${restesUtilises.join(', ') || 'aucun'}
 Profils famille: ${JSON.stringify(data.profils.map(p=>({prenom:p.prenom,allergies:p.allergies})))}
 Génère une liste de courses UNIQUEMENT en JSON valide, sans texte avant ni après, sans markdown.
 Format: {"Fruits et légumes":["Tomates x4"],"Viandes et poissons":["Poulet 1kg"],"Épicerie":["Thon x2"],"Produits frais":["Œufs x6"],"Autres":[]}
-IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Dédoublonne, cumule les quantités, respecte les allergies.`;
+IMPORTANT: N'inclus PAS les ingrédients des plats en restes. Le "légume d'accompagnement pour ce repas" indiqué pour un plat remplace tout légume qui pourrait apparaître dans ses ingrédients habituels : n'achète que celui-là pour ce repas. Dédoublonne, cumule les quantités, respecte les allergies.`;
 
   try {
     const d = await appellerProxyIA(prompt, 1000);
