@@ -96,7 +96,7 @@ textarea{min-height:70px;resize:vertical}
   .planning-legume-sel select{max-width:none;width:100%}
 }
 .planning-plat-sel select{padding:4px 6px;font-size:12px;border:1px solid var(--border);border-radius:6px;width:100%}
-.planning-ligne-btns{display:flex;gap:4px;flex-shrink:0}
+.planning-ligne-btns{display:flex;gap:4px;flex-shrink:0;margin-left:8px}
 .btn-icon{padding:4px 7px;font-size:13px;border-radius:6px;border:1px solid var(--border);background:white;cursor:pointer;display:inline-flex;align-items:center;color:var(--text-secondary)}
 .btn-icon:hover{background:var(--surface-1)}
 .btn-icon.add{color:var(--green);border-color:#5DCAA5}
@@ -311,7 +311,7 @@ textarea{min-height:70px;resize:vertical}
     </div>
     <div class="param-section">
       <h3>Informations</h3>
-      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v3.3</div></div></div>
+      <div class="param-row"><div class="param-info"><div class="param-label">Version</div><div class="param-desc">SurLePouce v3.4</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Utilisateur connecté</div><div class="param-desc" id="param-user-email">—</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Plats enregistrés</div><div class="param-desc" id="param-nb-plats">0 plat(s)</div></div></div>
       <div class="param-row"><div class="param-info"><div class="param-label">Profils</div><div class="param-desc" id="param-nb-profils">0 profil(s)</div></div></div>
@@ -1173,9 +1173,15 @@ function renderLigne(cle, moment, ligne, li) {
   div.appendChild(btnsDiv);
   container.appendChild(div);
 
-  if (ligne?.platId) platSel.value = ligne.platId;
-  if (ligne?.platId?.startsWith('reste:')) {
-    platSel.classList.add('select-reste');
+  if (ligne?.platId) {
+    platSel.value = ligne.platId;
+    if (platSel.value === ligne.platId && ligne.platId.startsWith('reste:')) {
+      platSel.classList.add('select-reste');
+    } else if (platSel.value !== ligne.platId) {
+      // La donnée pointe vers une option qui n'existe plus (reste déjà consommé ailleurs) :
+      // on affiche explicitement "— Choisir —" plutôt qu'un select vide et déroutant.
+      platSel.selectedIndex = 0;
+    }
   }
 }
 
@@ -1208,7 +1214,11 @@ window.majLigne = async (cle, moment, li, champ, valeur) => {
 };
 
 window.supprimerLigne = async (cle, moment, li) => {
-  if (!data.planning[cle]?.creneaux?.[moment]) return;
+  const ligne = data.planning[cle]?.creneaux?.[moment]?.[li];
+  if (!ligne) return;
+  // Confirmation seulement si la ligne contient réellement quelque chose, pour ne pas gêner
+  // la suppression d'une ligne vide tout en évitant un clic accidentel sur un repas déjà renseigné.
+  if (ligne.platId && !confirm('Supprimer ce repas du planning ?')) return;
   data.planning[cle].creneaux[moment].splice(li, 1);
   await sauvegarder();
   renderPlanning();
